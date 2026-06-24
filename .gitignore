@@ -1,0 +1,10 @@
+# Databricks / notebooks
+.databricks/
+*.pyc
+__pycache__/
+
+# OS / editors
+.DS_Store
+desktop.ini
+.idea/
+.vscode/

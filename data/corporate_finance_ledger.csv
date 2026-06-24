@@ -1,0 +1,96 @@
+entry_id,entry_date,cost_center,category,amount,type,description
+L100,2025-02-22,Marketing,SOFTWARE,"R$ 6,273.32",Despesa,  LICENCA DATABRICKS  
+L101,05/11/2025,Operações,Software,5622.22,DESPESA,Licenca Databricks
+L102,2025-01-04,Diretoria,Investimentos,"  38,690.68 ",receita,Resgate fundo
+L103,22/02/2025,rh,marketing,R$5539.78,despesa,Campanha Google Ads
+L104,2025-08-24,ti,Rendimentos,"24,839.07",Receita,Rendimento poupanca
+L105,13/11/2025,Marketing,Infraestrutura,"R$ 13,890.61",DESPESA,Cluster Databricks
+L106,2025-02-10,ti,Vendas,54594.75,receita,Contrato anual cliente
+L107,18/04/2025,Financeiro,servicos,"  4,233.82 ",despesa,Auditoria externa
+L108,2025-03-25,rh,impostos,R$13446.67,Despesa,  GUIA INSS  
+L109,28/04/2025,RH,Prestacao de Servicos,"29,321.21",Receita,Projeto implantacao
+L110,2025-06-11,marketing,impostos,"R$ 22,845.78",DESPESA,Recolhimento ISS
+L111,15/10/2025,Financeiro,Serviços,6769.03,Despesa,Auditoria externa
+L112,2025-09-18,ti,Cloud,"  9,177.51 ",Despesa,Backup nuvem
+L113,05/08/2025,rh,impostos,R$15760.66,DESPESA,DARF
+L114,2025-12-15,ti,servicos,"24,282.74",Despesa,Auditoria externa
+L115,27/02/2025,rh,Materiais,"R$ 19,261.25",despesa,Compra notebooks
+L116,2025-09-17,marketing,VENDAS,77891.61,Receita,  VENDA MENSAL  
+L117,04/10/2025,TI,Servicos Prestados,"  33,043.54 ",Receita,Horas consultoria
+L118,2025-06-07,TI,Servicos,R$2974.32,despesa,Consultoria contabil
+L119,30/09/2025,Comercial,Vendas,"59,893.07",Receita,Contrato anual cliente
+L120,2025-08-05,Operações,material,"R$ 6,773.40",DESPESA,Material escritorio
+L121,29/11/2025,Operacoes,ALUGUEL,10095.01,DESPESA,Locacao sala reuniao
+L122,2025-06-23,Marketing,Servicos,"  6,348.06 ",Despesa,Consultoria contabil
+L123,31/01/2025,ti,Aluguel,R$1960.63,DESPESA,Aluguel escritorio
+L124,2025-12-09,comercial ,Viagens,"12,951.07",despesa,  DIARIA VIAGEM  
+L125,08/04/2025,ti,Serviços,"R$ 19,658.56",despesa,Consultoria contabil
+L126,2025-01-28,TI,VIAGENS,10395.34,DESPESA,Passagem aerea SP
+L127,02/10/2025,Comercial,Viagens,"  6,366.68 ",Despesa,Diaria viagem
+L128,2025-08-15,TI,Anuncios,R$6395.20,Despesa,Campanha Google Ads
+L129,27/03/2025,Operacoes,Material,"24,231.11",Despesa,Compra notebooks
+L130,2025-07-19,Operacoes,Infraestrutura,"R$ 4,283.00",Despesa,Cluster Databricks
+L131,30/01/2025,Diretoria,Investimentos,19242.34,Receita,Aporte recuperado
+L132,2025-09-15,TI,Viagens,"  1,443.53 ",despesa,  HOSPEDAGEM CLIENTE  
+L133,12/12/2025,rh,impostos,R$1899.33,Despesa,Recolhimento ISS
+L134,2025-02-11,marketing,Prestacao de Servicos,"49,588.94",RECEITA,Sustentacao mensal
+L135,09/12/2025,RH,Materiais,"R$ 23,380.72",Despesa,Cadeiras ergonomicas
+L136,2025-08-23,ti,Investimentos,55376.77,receita,Dividendos
+L137,16/05/2025,RH,Vendas,"  45,322.58 ",RECEITA,Contrato anual cliente
+L138,2025-10-06,Financeiro,ALUGUEL,R$7267.69,despesa,Aluguel galpao
+L139,03/06/2025,ti,Material,"16,763.01",DESPESA,Cadeiras ergonomicas
+L140,2025-10-11,Financeiro,salarios,"R$ 3,062.63",Despesa,  ADIANTAMENTO SALARIAL  
+L141,21/11/2025,Operações,Prestacao de Servicos,30716.02,RECEITA,Sustentacao mensal
+L142,2025-01-23,RH,Software,"  15,930.25 ",despesa,Licenca Databricks
+L143,28/12/2025,Operações,marketing,R$18582.53,DESPESA,Material grafico
+L144,2025-10-26,rh,vendas,"45,919.27",receita,Contrato anual cliente
+L145,03/07/2025,marketing,juros,"R$ 72,423.61",Receita,Rendimento CDB
+L146,2025-11-14,comercial ,VENDAS,63508.72,receita,Contrato anual cliente
+L147,20/06/2025,marketing,Folha,  814.70 ,DESPESA,Ferias
+L148,2025-02-25,TI,ALUGUEL,R$4148.11,DESPESA,  LOCACAO SALA REUNIAO  
+L149,29/06/2025,comercial ,aluguel,"20,451.35",despesa,Locacao sala reuniao
+L150,2025-05-23,marketing,Serviços Prestados,"R$ 29,619.65",Receita,Sustentacao mensal
+L151,14/05/2025,Marketing,Materiais,23493.08,Despesa,Material escritorio
+L152,2025-06-26,rh,Marketing,"  2,888.38 ",despesa,Evento setorial
+L153,08/04/2025,TI,Material,R$9752.85,DESPESA,Compra notebooks
+L154,2025-12-18,RH,Licenças,"23,154.26",DESPESA,Assinatura Office 365
+L155,03/06/2025,marketing,Viagem,"R$ 16,652.01",Despesa,Reembolso km
+L156,2025-08-04,marketing,Infra,13949.43,Despesa,  BACKUP NUVEM  
+L157,08/10/2025,Financeiro,Folha de Pagamento,"  14,313.81 ",despesa,Folha mensal
+L158,2025-08-27,Operacoes,Aplicacoes,R$50499.62,receita,Dividendos
+L159,28/03/2025,ti,Suprimentos,"19,884.64",DESPESA,Cadeiras ergonomicas
+L160,2025-12-11,comercial ,Juros,"R$ 66,381.76",Receita,Juros aplicacao
+L161,09/11/2025,Operacoes,Salarios,1346.10,despesa,Folha mensal
+L162,2025-03-17,Diretoria,Locacao,"  12,460.55 ",Despesa,Aluguel galpao
+L163,23/09/2025,TI,Venda Mensal,R$21413.09,RECEITA,Fechamento Q
+L164,2025-12-08,Operacoes,Tributos,"3,506.81",despesa,  PAGAMENTO ICMS  
+L165,17/08/2025,Diretoria,Suprimentos,"R$ 20,798.12",DESPESA,Material escritorio
+L166,2025-05-22,Operacoes,servicos,18844.06,DESPESA,Auditoria externa
+L167,01/05/2025,RH,Anuncios,"  2,121.59 ",despesa,Evento setorial
+L168,2025-12-22,Diretoria,vendas,R$16312.30,receita,Contrato anual cliente
+L169,01/08/2025,comercial ,investimentos,"29,816.10",receita,Resgate fundo
+L170,2025-07-14,TI,Infraestrutura,"R$ 21,446.95",DESPESA,Backup nuvem
+L171,03/10/2025,Operacoes,Anuncios,21365.51,despesa,Anuncio LinkedIn
+L172,2025-12-09,rh,investimentos,"  7,176.86 ",receita,  APORTE RECUPERADO  
+L173,14/01/2025,Marketing,Serviços,R$24521.91,DESPESA,Servico juridico
+L174,2025-08-25,TI,Software,"16,140.19",Despesa,Assinatura Office 365
+L175,14/07/2025,rh,Juros,"R$ 39,102.45",receita,Juros aplicacao
+L176,2025-01-27,comercial ,Venda Mensal,6453.75,RECEITA,Venda licencas
+L177,11/01/2025,comercial ,Software,"  23,750.37 ",Despesa,Assinatura Office 365
+L178,2025-07-08,Marketing,vendas,R$39877.55,receita,Contrato anual cliente
+L179,24/10/2025,Financeiro,impostos,"24,125.08",Despesa,DARF
+L180,2025-02-08,ti,Cloud,"R$ 23,548.47",Despesa,  ARMAZENAMENTO S3  
+L181,22/01/2025,Operações,Marketing,19946.43,DESPESA,Evento setorial
+L182,2025-01-07,Operacoes,Viagens,"  12,747.83 ",despesa,Diaria viagem
+L183,29/12/2025,rh,Rendimentos,R$71868.13,receita,Rendimento CDB
+L184,2025-09-05,rh,Rendimentos,"65,614.94",RECEITA,Juros aplicacao
+L185,23/05/2025,comercial ,Publicidade,"R$ 21,322.49",Despesa,Material grafico
+L186,2025-04-04,comercial ,Infra,911.76,despesa,Backup nuvem
+L187,26/12/2025,Operações,Publicidade,"  7,135.53 ",DESPESA,Evento setorial
+L188,2025-09-08,comercial ,Servicos Prestados,R$23101.70,receita,  HORAS CONSULTORIA  
+L189,31/05/2025,rh,Consultoria,"19,864.74",Despesa,Consultoria contabil
+L107,18/04/2025,Financeiro,servicos,"  4,233.82 ",despesa,Auditoria externa
+L133,12/12/2025,rh,impostos,R$1899.33,Despesa,Recolhimento ISS
+L900,2025-09-18,ti,Cloud,,Despesa,Backup nuvem
+L901,,rh,Materiais,"R$ 19,261.25",despesa,Compra notebooks
+L902,2025-06-07,TI, ,R$2974.32,despesa,Consultoria contabil
