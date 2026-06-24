@@ -1,6 +1,6 @@
 -- Databricks notebook source
 -- MAGIC %md
--- MAGIC # 03 · Gold — tabelas de dimensão  🧩
+-- MAGIC # 03 · Gold — tabelas de dimensão
 -- MAGIC
 -- MAGIC Gold = um **star schema** (modelo estrela): pequenas tabelas de *dimensão*
 -- MAGIC em volta de uma tabela de *fato* central. Cada dimensão guarda os valores
@@ -18,7 +18,7 @@ USE SCHEMA treino_financeiro;
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ## ✅ Exemplo resolvido — `dim_centro_custo`
+-- MAGIC ## Exemplo resolvido — `dim_centro_custo`
 -- MAGIC
 -- MAGIC Pegue os centros de custo distintos da silver e dê a cada um uma chave
 -- MAGIC substituta. `row_number()` é um jeito simples e determinístico de gerá-la.
@@ -38,7 +38,7 @@ SELECT * FROM dim_centro_custo ORDER BY sk_centro_custo;
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ## 🧩 DESAFIO 1 — `dim_categoria`
+-- MAGIC ## DESAFIO 1 — `dim_categoria`
 -- MAGIC Monte a dimensão de categoria igual à `dim_centro_custo` acima, mas para a
 -- MAGIC coluna `categoria`. Colunas: `sk_categoria`, `nome_categoria`.
 -- MAGIC
@@ -53,7 +53,7 @@ SELECT * FROM dim_centro_custo ORDER BY sk_centro_custo;
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ## 🧩 DESAFIO 2 — `dim_data`
+-- MAGIC ## DESAFIO 2 — `dim_data`
 -- MAGIC Uma dimensão de data tem **uma linha por dia do calendário** com as partes
 -- MAGIC já separadas, para o dashboard agrupar por ano / mês / trimestre sem fazer
 -- MAGIC conta de data.

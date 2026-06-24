@@ -77,7 +77,7 @@ ORDER BY d.ano, d.mes, f.tipo;
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ## 📊 Transforme isso num dashboard
+-- MAGIC ## Transforme isso num dashboard
 -- MAGIC
 -- MAGIC 1. Abra **SQL → Dashboards → Create dashboard** (Databricks SQL).
 -- MAGIC 2. Crie um **dataset** para cada consulta acima (cole o SQL).
@@ -89,5 +89,5 @@ ORDER BY d.ano, d.mes, f.tipo;
 -- MAGIC    - **Barra agrupada** para *receita vs despesa por mês*.
 -- MAGIC 4. Adicione um **filtro** em `ano` / `nome_centro_custo` para deixar interativo.
 -- MAGIC
--- MAGIC 🧩 **DESAFIO:** crie mais duas métricas suas — ex.: *despesa média por
+-- MAGIC **DESAFIO:** crie mais duas métricas suas — ex.: *despesa média por
 -- MAGIC lançamento*, *crescimento mês a mês*, ou *top 3 centros de custo por resultado*.

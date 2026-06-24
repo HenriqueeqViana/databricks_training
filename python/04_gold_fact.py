@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 04 · Gold — tabela fato  🧩
+# MAGIC # 04 · Gold — tabela fato
 # MAGIC
 # MAGIC A tabela **fato** é o coração do modelo estrela: uma linha por lançamento,
 # MAGIC guardando as **métricas** (números que somamos) e as **chaves estrangeiras**
@@ -17,12 +17,12 @@ spark.sql(f"USE SCHEMA {SCHEMA}")
 
 silver           = spark.table("silver_lancamentos")
 dim_centro_custo = spark.table("dim_centro_custo")
-# dim_categoria  = spark.table("dim_categoria")   # 🧩 descomente depois de criar no 03
+# dim_categoria  = spark.table("dim_categoria")   # descomente depois de criar no 03
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## ✅ Exemplo resolvido — a métrica com sinal
+# MAGIC ## Exemplo resolvido — a métrica com sinal
 # MAGIC `valor` é sempre positivo. Receita deve somar e despesa subtrair, então
 # MAGIC derivamos `valor_sinalizado = +valor para Receita, -valor para Despesa`.
 # MAGIC Somar essa coluna dá o **resultado líquido** direto.
@@ -30,7 +30,7 @@ dim_centro_custo = spark.table("dim_centro_custo")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 🧩 DESAFIO — monte `fato_lancamentos`
+# MAGIC ## DESAFIO — monte `fato_lancamentos`
 # MAGIC Junte a silver a cada dimensão para trocar texto por chaves substitutas. O
 # MAGIC join de centro de custo + a métrica com sinal estão prontos; preencha os
 # MAGIC `TODO` de categoria.
@@ -38,17 +38,17 @@ dim_centro_custo = spark.table("dim_centro_custo")
 # COMMAND ----------
 
 fato = (silver
-    .withColumn("sk_data", F.date_format("data_lancamento", "yyyyMMdd").cast("int"))   # ✅ pronto
+    .withColumn("sk_data", F.date_format("data_lancamento", "yyyyMMdd").cast("int"))   # pronto
     .withColumn("valor_sinalizado",
                 F.when(F.col("tipo") == "Receita", F.col("valor"))
-                 .otherwise(-F.col("valor")))                                           # ✅ exemplo resolvido
-    .join(dim_centro_custo, silver.centro_custo == dim_centro_custo.nome_centro_custo)  # ✅ join modelo
-    # 🧩 TODO: .join(dim_categoria, silver.categoria == dim_categoria.nome_categoria)
+                 .otherwise(-F.col("valor")))                                           # exemplo resolvido
+    .join(dim_centro_custo, silver.centro_custo == dim_centro_custo.nome_centro_custo)  # join modelo
+    # TODO: .join(dim_categoria, silver.categoria == dim_categoria.nome_categoria)
     .select(
         "id_lancamento",
         "sk_data",
         "sk_centro_custo",
-        # 🧩 TODO: "sk_categoria",
+        # TODO: "sk_categoria",
         "tipo",
         "valor",
         "valor_sinalizado",

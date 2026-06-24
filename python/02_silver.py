@@ -1,13 +1,13 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 02 · Silver — limpar & padronizar  🧩
+# MAGIC # 02 · Silver — limpar & padronizar
 # MAGIC
 # MAGIC Silver = dado limpo, tipado e confiável. Número vira número, data vira data,
 # MAGIC texto padronizado, categorias unificadas, duplicados/linhas ruins removidos.
 # MAGIC
 # MAGIC ## Como este notebook funciona
 # MAGIC A coluna **`valor`** já está pronta como exemplo resolvido. Cada outra coluna
-# MAGIC tem um `🧩 DESAFIO` com um `TODO`. Preencha e grave a tabela.
+# MAGIC tem um `DESAFIO` com um `TODO`. Preencha e grave a tabela.
 # MAGIC A resposta de referência fica com o instrutor.
 
 # COMMAND ----------
@@ -24,7 +24,7 @@ bronze = spark.table("bronze_lancamentos")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## ✅ Exemplo resolvido — limpando `valor`
+# MAGIC ## Exemplo resolvido — limpando `valor`
 # MAGIC
 # MAGIC Valores brutos vêm como `R$ 6,273.32`, `5622.22`, `  4,233.82 `, `R$13446.67`.
 # MAGIC Os únicos caracteres que importam são **dígitos e o ponto decimal**, então
@@ -41,7 +41,7 @@ display(bronze.select(
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 🧩 Monte o DataFrame silver completo
+# MAGIC ## Monte o DataFrame silver completo
 # MAGIC Substitua cada expressão `TODO`. A coluna `valor` é o seu modelo.
 
 # COMMAND ----------
@@ -49,15 +49,15 @@ display(bronze.select(
 silver = bronze.select(
     F.trim("id_lancamento").alias("id_lancamento"),
 
-    # 🧩 DESAFIO 1 — data_lancamento: converta 'yyyy-MM-dd' E 'dd/MM/yyyy' para date.
+    # DESAFIO 1 — data_lancamento: converta 'yyyy-MM-dd' E 'dd/MM/yyyy' para date.
     # Dica: F.coalesce(F.to_date("data_lancamento","yyyy-MM-dd"),
     #                  F.to_date("data_lancamento","dd/MM/yyyy"))
     F.lit(None).cast("date").alias("data_lancamento"),                 # TODO
 
-    # 🧩 DESAFIO 2 — centro_custo: trim + Iniciais Maiúsculas. Dica: F.initcap(F.trim(...))
+    # DESAFIO 2 — centro_custo: trim + Iniciais Maiúsculas. Dica: F.initcap(F.trim(...))
     F.lit("TODO").alias("centro_custo"),                               # TODO
 
-    # 🧩 DESAFIO 3 — categoria: mapeie as variantes -> UM rótulo padronizado.
+    # DESAFIO 3 — categoria: mapeie as variantes -> UM rótulo padronizado.
     # Dica: monte cat = F.lower(F.trim("categoria")) e encadeie
     #   F.when(cat.isin("software","licencas","licenças"), "Software")
     #    .when(cat.isin("impostos","tributos"), "Impostos")
@@ -66,22 +66,22 @@ silver = bronze.select(
     #    .when((cat == "") | cat.isNull(), "Sem Categoria")
     F.lit("TODO").alias("categoria"),                                  # TODO
 
-    # ✅ EXEMPLO RESOLVIDO — valor (pronto para você)
+    # EXEMPLO RESOLVIDO — valor (pronto para você)
     F.regexp_replace(F.col("valor"), r"[^0-9.]", "").cast("decimal(12,2)").alias("valor"),
 
-    # 🧩 DESAFIO 4 — tipo: normalize a caixa para Receita/Despesa.
+    # DESAFIO 4 — tipo: normalize a caixa para Receita/Despesa.
     # Dica: t = F.lower(F.trim("tipo"));  F.when(t=="receita","Receita").when(t=="despesa","Despesa")
     F.lit("TODO").alias("tipo"),                                       # TODO
 
-    # 🧩 DESAFIO 5 — descricao: junte espaços + Iniciais Maiúsculas.
+    # DESAFIO 5 — descricao: junte espaços + Iniciais Maiúsculas.
     # Dica: F.initcap(F.trim(F.regexp_replace("descricao", r"\s+", " ")))
     F.lit("TODO").alias("descricao"),
 )
 
-# 🧩 DESAFIO 6 — descarte linhas inutilizáveis (sem data ou sem valor):
+# DESAFIO 6 — descarte linhas inutilizáveis (sem data ou sem valor):
 # silver = silver.filter(F.col("data_lancamento").isNotNull() & F.col("valor").isNotNull())
 
-# 🧩 DESAFIO 7 — remova duplicatas exatas:
+# DESAFIO 7 — remova duplicatas exatas:
 # silver = silver.dropDuplicates()
 
 silver.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("silver_lancamentos")

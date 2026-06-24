@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 03 · Gold — tabelas de dimensão  🧩
+# MAGIC # 03 · Gold — tabelas de dimensão
 # MAGIC
 # MAGIC Gold = um **star schema**: dimensões pequenas em volta de um fato central.
 # MAGIC Cada dimensão guarda valores únicos de um atributo + uma chave substituta
@@ -24,7 +24,7 @@ silver = spark.table("silver_lancamentos")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## ✅ Exemplo resolvido — `dim_centro_custo`
+# MAGIC ## Exemplo resolvido — `dim_centro_custo`
 # MAGIC Centros de custo distintos + uma chave substituta via `row_number()`.
 
 # COMMAND ----------
@@ -39,7 +39,7 @@ display(spark.table("dim_centro_custo").orderBy("sk_centro_custo"))
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 🧩 DESAFIO 1 — `dim_categoria`
+# MAGIC ## DESAFIO 1 — `dim_categoria`
 # MAGIC Mesma receita acima, para `categoria`. Colunas: `sk_categoria`, `nome_categoria`.
 # MAGIC **Bônus:** adicione `grupo_categoria` com uma cadeia de `F.when(...)`.
 
@@ -51,7 +51,7 @@ display(spark.table("dim_centro_custo").orderBy("sk_centro_custo"))
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 🧩 DESAFIO 2 — `dim_data`
+# MAGIC ## DESAFIO 2 — `dim_data`
 # MAGIC Uma linha por dia, com as partes separadas. Monte a partir dos valores
 # MAGIC distintos de `data_lancamento`. Colunas sugeridas + dicas:
 # MAGIC

@@ -73,7 +73,7 @@ ORDER BY d.ano, d.mes, f.tipo
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 📊 Transforme isso num dashboard
+# MAGIC ## Transforme isso num dashboard
 # MAGIC
 # MAGIC 1. **SQL → Dashboards → Create dashboard**.
 # MAGIC 2. Crie um **dataset** por consulta acima (cole o SQL).
@@ -82,5 +82,5 @@ ORDER BY d.ano, d.mes, f.tipo
 # MAGIC    **barra agrupada** para receita vs despesa.
 # MAGIC 4. Adicione um **filtro** em `ano` / `nome_centro_custo` para interatividade.
 # MAGIC
-# MAGIC 🧩 **DESAFIO:** crie duas métricas suas — ex.: *despesa média por lançamento*,
+# MAGIC **DESAFIO:** crie duas métricas suas — ex.: *despesa média por lançamento*,
 # MAGIC *crescimento mês a mês*, ou *top 3 centros de custo por resultado*.

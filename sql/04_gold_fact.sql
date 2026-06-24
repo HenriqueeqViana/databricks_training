@@ -1,6 +1,6 @@
 -- Databricks notebook source
 -- MAGIC %md
--- MAGIC # 04 · Gold — tabela fato  🧩
+-- MAGIC # 04 · Gold — tabela fato
 -- MAGIC
 -- MAGIC A tabela **fato** é o coração do modelo estrela: uma linha por evento de
 -- MAGIC negócio (aqui, um lançamento). Ela guarda as **métricas** (os números que
@@ -15,7 +15,7 @@ USE SCHEMA treino_financeiro;
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ## ✅ Exemplo resolvido — a métrica com sinal
+-- MAGIC ## Exemplo resolvido — a métrica com sinal
 -- MAGIC
 -- MAGIC O `valor` na silver é sempre positivo. Para um resultado (P&L) queremos
 -- MAGIC **receita somando** e **despesa subtraindo**, então derivamos um
@@ -29,7 +29,7 @@ USE SCHEMA treino_financeiro;
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ## 🧩 DESAFIO — monte `fato_lancamentos`
+-- MAGIC ## DESAFIO — monte `fato_lancamentos`
 -- MAGIC
 -- MAGIC Junte `silver_lancamentos` a cada dimensão para trocar o texto descritivo
 -- MAGIC pelas chaves substitutas. O esqueleto está abaixo — preencha os dois `TODO`
@@ -43,21 +43,21 @@ SELECT
   s.id_lancamento,
 
   -- chave de data: a mesma fórmula yyyyMMdd usada para montar a dim_data
-  CAST(date_format(s.data_lancamento, 'yyyyMMdd') AS INT) AS sk_data,            -- ✅ pronto
+  CAST(date_format(s.data_lancamento, 'yyyyMMdd') AS INT) AS sk_data,            -- pronto
 
-  cc.sk_centro_custo,                                                            -- ✅ pronto (do join abaixo)
+  cc.sk_centro_custo,                                                            -- pronto (do join abaixo)
 
-  -- 🧩 TODO: traga a chave substituta de categoria
+  -- TODO: traga a chave substituta de categoria
   NULL AS sk_categoria,                                                          -- TODO -> cat.sk_categoria
 
   -- métricas
   s.tipo,
   s.valor,
-  CASE WHEN s.tipo = 'Receita' THEN s.valor ELSE -s.valor END AS valor_sinalizado, -- ✅ exemplo resolvido
+  CASE WHEN s.tipo = 'Receita' THEN s.valor ELSE -s.valor END AS valor_sinalizado, -- exemplo resolvido
   s.descricao
 FROM silver_lancamentos s
-JOIN dim_centro_custo cc ON s.centro_custo = cc.nome_centro_custo                -- ✅ join modelo
--- 🧩 TODO: JOIN dim_categoria cat ON s.categoria = cat.nome_categoria
+JOIN dim_centro_custo cc ON s.centro_custo = cc.nome_centro_custo                -- join modelo
+-- TODO: JOIN dim_categoria cat ON s.categoria = cat.nome_categoria
 ;
 
 -- COMMAND ----------

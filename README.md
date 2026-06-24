@@ -5,7 +5,7 @@ financeiros e o transforma em um **modelo estrela** (star schema) com métricas 
 dashboard — usando a **arquitetura Medallion** (Bronze → Silver → Gold) no
 Databricks.
 
-> 🌎 Esta é a versão em **português** (para o treino interno). Uma versão pública
+> Esta é a versão em **português** (para o treino interno). Uma versão pública
 > em inglês será derivada depois.
 
 Há **dois tracks paralelos** que fazem exatamente a mesma coisa:
@@ -18,7 +18,7 @@ Há **dois tracks paralelos** que fazem exatamente a mesma coisa:
 Escolha o que preferir — os passos, nomes de tabela e resultados são idênticos.
 
 > O instrutor mostra **um exemplo resolvido** em cada etapa. Tudo marcado como
-> `🧩 DESAFIO` / `TODO` é para **você** completar. As respostas de referência
+> `DESAFIO` / `TODO` é para **você** completar. As respostas de referência
 > ficam com o **instrutor** (fora deste repositório, de propósito).
 
 ---
