@@ -1,150 +1,139 @@
-# Databricks Medallion Training — Corporate Finance Ledger
+# Treinamento Databricks — Arquitetura Medallion (Razão Financeiro)
 
-A hands-on, beginner-friendly training that takes a messy CSV and turns it into a
-clean **star schema** with metrics and a dashboard — using the **Medallion
-architecture** (Bronze → Silver → Gold) on Databricks.
+Treinamento prático e didático que pega um **CSV bagunçado** de lançamentos
+financeiros e o transforma em um **modelo estrela** (star schema) com métricas e
+dashboard — usando a **arquitetura Medallion** (Bronze → Silver → Gold) no
+Databricks.
 
-There are **two parallel tracks** that do exactly the same thing:
+> 🌎 Esta é a versão em **português** (para o treino interno). Uma versão pública
+> em inglês será derivada depois.
 
-| Track | Folder | Language |
-|-------|--------|----------|
+Há **dois tracks paralelos** que fazem exatamente a mesma coisa:
+
+| Track | Pasta | Linguagem |
+|-------|-------|-----------|
 | SQL    | [`sql/`](sql/)       | Databricks SQL |
 | Python | [`python/`](python/) | PySpark |
 
-Pick whichever you prefer — the steps, table names and results are identical.
+Escolha o que preferir — os passos, nomes de tabela e resultados são idênticos.
 
-> The instructor walks through **one worked example** in each step. Everything
-> marked `🧩 CHALLENGE` / `TODO` is for **you** to complete. Reference answers
-> live in [`solutions/`](solutions/).
-
----
-
-## 🇬🇧 What you will build
-
-```
- corporate_finance_ledger.csv   (messy raw export)
-            │
-            ▼
-   ┌──────────────────┐
-   │  BRONZE           │  raw ingest, everything as text + load metadata
-   │  bronze_ledger    │
-   └──────────────────┘
-            │  clean & standardize (the challenges)
-            ▼
-   ┌──────────────────┐
-   │  SILVER           │  typed, deduplicated, English categories
-   │  silver_ledger    │
-   └──────────────────┘
-            │  model into a star schema
-            ▼
-   ┌──────────────────────────────────────────────┐
-   │  GOLD                                          │
-   │  dim_date · dim_cost_center · dim_category     │
-   │  fact_ledger                                   │
-   └──────────────────────────────────────────────┘
-            │
-            ▼
-     metrics + Databricks SQL dashboard
-```
-
-### Steps
-
-| # | Notebook | What happens |
-|---|----------|--------------|
-| 00 | `00_setup` | Create the catalog/schema/volume. **Upload the CSV** to the volume. |
-| 01 | `01_bronze` | Read the CSV from the volume → write `bronze_ledger` (raw, as-is). |
-| 02 | `02_silver` | Clean & standardize the data. **1 example done, the rest are challenges.** |
-| 03 | `03_gold_dimensions` | Build the dimension tables. **1 example done, the rest are challenges.** |
-| 04 | `04_gold_fact` | Build the fact table by joining dimensions. **Challenge.** |
-| 05 | `05_metrics` | Analytical queries + how to pin them to a dashboard. |
+> O instrutor mostra **um exemplo resolvido** em cada etapa. Tudo marcado como
+> `🧩 DESAFIO` / `TODO` é para **você** completar. As respostas estão em
+> [`solutions/`](solutions/).
 
 ---
 
-## 🇧🇷 O que você vai construir (Português)
+## O que você vai construir
 
-Este treino pega um CSV **bagunçado** de lançamentos financeiros e o transforma em
-um **modelo estrela** (star schema) com métricas e dashboard, usando a
-**arquitetura Medallion** (Bronze → Silver → Gold) no Databricks.
+```
+ lancamentos_financeiros.csv   (export bruto e bagunçado)
+            │
+            ▼
+   ┌────────────────────────┐
+   │  BRONZE                 │  ingestão crua, tudo como texto + metadados
+   │  bronze_lancamentos     │
+   └────────────────────────┘
+            │  limpar & padronizar (os desafios)
+            ▼
+   ┌────────────────────────┐
+   │  SILVER                 │  tipado, sem duplicatas, categorias padronizadas
+   │  silver_lancamentos     │
+   └────────────────────────┘
+            │  modelar em star schema
+            ▼
+   ┌──────────────────────────────────────────────────┐
+   │  GOLD                                              │
+   │  dim_data · dim_centro_custo · dim_categoria       │
+   │  fato_lancamentos                                  │
+   └──────────────────────────────────────────────────┘
+            │
+            ▼
+     métricas + dashboard no Databricks SQL
+```
 
-- **Bronze** = dado cru, tudo como texto, sem tratamento (só guardamos a origem).
-- **Silver** = dado **limpo e padronizado**: datas convertidas, valores virando
-  número, categorias em inglês, duplicados removidos.
+### O que é cada camada
+
+- **Bronze** = dado **cru**, tudo como texto, sem tratamento (só guardamos a
+  origem do arquivo e a hora da carga). Nunca perdemos a verdade original.
+- **Silver** = dado **limpo e padronizado**: datas convertidas, valor virando
+  número, categorias padronizadas, tipos normalizados, duplicados removidos.
 - **Gold** = modelo dimensional: tabelas de **dimensão** (`dim_*`) e de **fato**
-  (`fact_ledger`) prontas para análise e dashboard.
+  (`fato_lancamentos`) prontas para análise e dashboard.
 
-O instrutor mostra **1 exemplo** em cada etapa. O que estiver marcado como
-`🧩 CHALLENGE` / `TODO` é **você** quem completa. As respostas estão em
-[`solutions/`](solutions/).
+### Etapas
 
-> Observação sobre os dados: os **cabeçalhos** do CSV estão em inglês (o projeto
-> padroniza colunas em inglês), mas os **valores** são propositalmente "à
-> brasileira" e sujos — centros de custo em PT (`TI`, `Comercial`...), tipo
-> `Receita`/`Despesa`, valores em `R$`, datas em dois formatos. Padronizar isso é
-> justamente o desafio. 🙂
-
----
-
-## Getting started
-
-### 1. Configuration (used by every notebook)
-
-All notebooks read these three names from the top cell. Change them if your
-workspace uses a different catalog:
-
-```
-catalog = workspace          -- default catalog in new Databricks workspaces
-schema  = finance_training
-volume  = landing
-```
-
-The CSV is expected at:
-
-```
-/Volumes/workspace/finance_training/landing/corporate_finance_ledger.csv
-```
-
-### 2. Upload the data
-
-Run `00_setup` first (it creates the volume), then upload
-[`data/corporate_finance_ledger.csv`](data/corporate_finance_ledger.csv) to the
-volume. Two easy ways:
-
-- **UI:** Catalog → `workspace` → `finance_training` → `landing` → **Upload to this volume**.
-- **CLI:** `databricks fs cp data/corporate_finance_ledger.csv dbfs:/Volumes/workspace/finance_training/landing/`
-
-### 3. Run the notebooks in order
-
-Import the `sql/` *or* `python/` folder into your workspace and run `00` → `05`.
+| # | Notebook | O que acontece |
+|---|----------|----------------|
+| 00 | `00_setup` | Cria o catálogo/schema/volume. **Suba o CSV** no volume. |
+| 01 | `01_bronze` | Lê o CSV do volume → grava `bronze_lancamentos` (cru). |
+| 02 | `02_silver` | Limpa & padroniza. **1 exemplo pronto, o resto são desafios.** |
+| 03 | `03_gold_dimensions` | Monta as dimensões. **1 exemplo pronto, o resto são desafios.** |
+| 04 | `04_gold_fact` | Monta a tabela fato juntando as dimensões. **Desafio.** |
+| 05 | `05_metrics` | Consultas analíticas + como fixar num dashboard. |
 
 ---
 
-## The dataset
+## Como começar
 
-Raw columns in [`data/corporate_finance_ledger.csv`](data/corporate_finance_ledger.csv):
+### 1. Configuração (usada por todos os notebooks)
 
-| Column | Example | Mess to clean |
-|--------|---------|---------------|
-| `entry_id`    | `L100`              | — |
-| `entry_date`  | `2025-02-22`, `05/11/2025` | two date formats |
-| `cost_center` | `TI`, `ti`, `Operações`, `comercial ` | casing + trailing spaces |
-| `category`    | `SOFTWARE`, `software`, `Impostos` | casing + PT synonyms → English |
-| `amount`      | `R$ 6,273.32`, `5622.22`, `  4,233.82 ` | currency symbol, spaces, thousands sep |
-| `type`        | `Receita`, `despesa`, `DESPESA` | casing → `Income`/`Expense` |
-| `description` | `  LICENCA DATABRICKS  ` | extra spaces, casing |
+Todos os notebooks leem estes três nomes na primeira célula. Mude se o seu
+workspace usar outro catálogo:
 
-Plus a few injected data-quality issues: **duplicate rows**, **missing amount**,
-**missing date**, **blank category**.
+```
+catalog = workspace            -- catálogo padrão em workspaces novos do Databricks
+schema  = treino_financeiro
+volume  = entrada
+```
+
+O CSV é esperado em:
+
+```
+/Volumes/workspace/treino_financeiro/entrada/lancamentos_financeiros.csv
+```
+
+### 2. Suba os dados
+
+Rode o `00_setup` primeiro (ele cria o volume), depois suba o arquivo
+[`data/lancamentos_financeiros.csv`](data/lancamentos_financeiros.csv) no volume.
+Dois jeitos fáceis:
+
+- **UI:** Catalog → `workspace` → `treino_financeiro` → `entrada` → **Upload to this volume**.
+- **CLI:** `databricks fs cp data/lancamentos_financeiros.csv dbfs:/Volumes/workspace/treino_financeiro/entrada/`
+
+### 3. Rode os notebooks em ordem
+
+Importe a pasta `sql/` *ou* `python/` no seu workspace e rode do `00` ao `05`.
 
 ---
 
-## Repo layout
+## Os dados
+
+Colunas brutas em [`data/lancamentos_financeiros.csv`](data/lancamentos_financeiros.csv):
+
+| Coluna | Exemplo | Bagunça para limpar |
+|--------|---------|---------------------|
+| `id_lancamento`   | `L100`              | — |
+| `data_lancamento` | `2025-02-22`, `05/11/2025` | dois formatos de data |
+| `centro_custo`    | `TI`, `ti`, `Operações`, `comercial ` | caixa + espaços sobrando |
+| `categoria`       | `SOFTWARE`, `software`, `Impostos` | caixa + sinônimos a padronizar |
+| `valor`           | `R$ 6,273.32`, `5622.22`, `  4,233.82 ` | símbolo, espaços, separador de milhar |
+| `tipo`            | `Receita`, `despesa`, `DESPESA` | caixa → `Receita`/`Despesa` |
+| `descricao`       | `  LICENCA DATABRICKS  ` | espaços sobrando, caixa |
+
+Além disso, alguns problemas de qualidade injetados de propósito: **linhas
+duplicadas**, **valor faltando**, **data faltando**, **categoria em branco**.
+
+---
+
+## Estrutura do repositório
 
 ```
 databricks_training/
 ├── data/
-│   └── corporate_finance_ledger.csv   # the messy sample data
-├── sql/                               # SQL track (00 → 05)
-├── python/                            # PySpark track (00 → 05)
-├── solutions/                         # reference answers (instructor)
+│   └── lancamentos_financeiros.csv    # os dados de exemplo (bagunçados)
+├── sql/                               # track SQL (00 → 05)
+├── python/                            # track PySpark (00 → 05)
+├── solutions/                         # respostas de referência (instrutor)
 └── README.md
 ```

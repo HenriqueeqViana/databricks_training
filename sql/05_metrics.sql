@@ -1,96 +1,93 @@
 -- Databricks notebook source
 -- MAGIC %md
--- MAGIC # 05 · Metrics & Dashboard
+-- MAGIC # 05 · Métricas & Dashboard
 -- MAGIC
--- MAGIC **🇬🇧** Now the payoff: query the star schema to answer business questions,
--- MAGIC then pin the results to a **Databricks SQL dashboard**.
--- MAGIC
--- MAGIC **🇧🇷** A recompensa: consultamos o modelo estrela para responder perguntas de
+-- MAGIC Agora a recompensa: consultamos o modelo estrela para responder perguntas de
 -- MAGIC negócio e depois fixamos os resultados em um **dashboard do Databricks SQL**.
 -- MAGIC
--- MAGIC Notice how readable these queries are — that is the *point* of the star
--- MAGIC schema: join the fact to the dimensions and `GROUP BY` plain English columns.
+-- MAGIC Repare como essas consultas ficam legíveis — esse é o *propósito* do modelo
+-- MAGIC estrela: junte o fato às dimensões e faça `GROUP BY` em colunas em português.
 
 -- COMMAND ----------
 
 USE CATALOG workspace;
-USE SCHEMA finance_training;
+USE SCHEMA treino_financeiro;
 
 -- COMMAND ----------
 
--- DBTITLE 1,KPI — total income, expense & net result
+-- DBTITLE 1,KPI — total de receita, despesa & resultado líquido
 SELECT
-  sum(CASE WHEN type = 'Income'  THEN amount ELSE 0 END) AS total_income,
-  sum(CASE WHEN type = 'Expense' THEN amount ELSE 0 END) AS total_expense,
-  sum(signed_amount)                                     AS net_result
-FROM fact_ledger;
+  sum(CASE WHEN tipo = 'Receita' THEN valor ELSE 0 END) AS total_receita,
+  sum(CASE WHEN tipo = 'Despesa' THEN valor ELSE 0 END) AS total_despesa,
+  sum(valor_sinalizado)                                 AS resultado_liquido
+FROM fato_lancamentos;
 
 -- COMMAND ----------
 
--- DBTITLE 1,Net result by month (trend line)
+-- DBTITLE 1,Resultado líquido por mês (linha de tendência)
 SELECT
-  d.year,
-  d.month,
-  d.month_name,
-  sum(f.signed_amount) AS net_result
-FROM fact_ledger f
-JOIN dim_date d ON f.date_key = d.date_key
-GROUP BY d.year, d.month, d.month_name
-ORDER BY d.year, d.month;
+  d.ano,
+  d.mes,
+  d.nome_mes,
+  sum(f.valor_sinalizado) AS resultado_liquido
+FROM fato_lancamentos f
+JOIN dim_data d ON f.sk_data = d.sk_data
+GROUP BY d.ano, d.mes, d.nome_mes
+ORDER BY d.ano, d.mes;
 
 -- COMMAND ----------
 
--- DBTITLE 1,Expense by cost center (bar chart)
+-- DBTITLE 1,Despesa por centro de custo (gráfico de barras)
 SELECT
-  cc.cost_center_name,
-  sum(f.amount) AS total_expense
-FROM fact_ledger f
-JOIN dim_cost_center cc ON f.cost_center_key = cc.cost_center_key
-WHERE f.type = 'Expense'
-GROUP BY cc.cost_center_name
-ORDER BY total_expense DESC;
+  cc.nome_centro_custo,
+  sum(f.valor) AS total_despesa
+FROM fato_lancamentos f
+JOIN dim_centro_custo cc ON f.sk_centro_custo = cc.sk_centro_custo
+WHERE f.tipo = 'Despesa'
+GROUP BY cc.nome_centro_custo
+ORDER BY total_despesa DESC;
 
 -- COMMAND ----------
 
--- DBTITLE 1,Top expense categories
+-- DBTITLE 1,Maiores categorias de despesa
 SELECT
-  cat.category_name,
-  sum(f.amount) AS total_expense,
-  count(*)      AS entries
-FROM fact_ledger f
-JOIN dim_category cat ON f.category_key = cat.category_key
-WHERE f.type = 'Expense'
-GROUP BY cat.category_name
-ORDER BY total_expense DESC
+  cat.nome_categoria,
+  sum(f.valor) AS total_despesa,
+  count(*)     AS lancamentos
+FROM fato_lancamentos f
+JOIN dim_categoria cat ON f.sk_categoria = cat.sk_categoria
+WHERE f.tipo = 'Despesa'
+GROUP BY cat.nome_categoria
+ORDER BY total_despesa DESC
 LIMIT 10;
 
 -- COMMAND ----------
 
--- DBTITLE 1,Income vs Expense by month (grouped chart)
+-- DBTITLE 1,Receita vs Despesa por mês (gráfico agrupado)
 SELECT
-  d.year,
-  d.month,
-  f.type,
-  sum(f.amount) AS total
-FROM fact_ledger f
-JOIN dim_date d ON f.date_key = d.date_key
-GROUP BY d.year, d.month, f.type
-ORDER BY d.year, d.month, f.type;
+  d.ano,
+  d.mes,
+  f.tipo,
+  sum(f.valor) AS total
+FROM fato_lancamentos f
+JOIN dim_data d ON f.sk_data = d.sk_data
+GROUP BY d.ano, d.mes, f.tipo
+ORDER BY d.ano, d.mes, f.tipo;
 
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ## 📊 Turn these into a dashboard
+-- MAGIC ## 📊 Transforme isso num dashboard
 -- MAGIC
--- MAGIC 1. Open **SQL → Dashboards → Create dashboard** (Databricks SQL).
--- MAGIC 2. Add a **dataset** for each query above (paste the SQL).
--- MAGIC 3. Add visualizations on the canvas:
--- MAGIC    - KPI counters for *total income / expense / net result*.
--- MAGIC    - **Line** chart for *net result by month*.
--- MAGIC    - **Bar** chart for *expense by cost center*.
--- MAGIC    - **Bar** chart for *top expense categories*.
--- MAGIC    - **Grouped bar** for *income vs expense by month*.
--- MAGIC 4. Add a **filter** widget on `year` / `cost_center_name` to make it interactive.
+-- MAGIC 1. Abra **SQL → Dashboards → Create dashboard** (Databricks SQL).
+-- MAGIC 2. Crie um **dataset** para cada consulta acima (cole o SQL).
+-- MAGIC 3. Adicione as visualizações na tela:
+-- MAGIC    - Contadores **KPI** para *total receita / despesa / resultado líquido*.
+-- MAGIC    - Gráfico de **linha** para *resultado líquido por mês*.
+-- MAGIC    - Gráfico de **barras** para *despesa por centro de custo*.
+-- MAGIC    - Gráfico de **barras** para *maiores categorias de despesa*.
+-- MAGIC    - **Barra agrupada** para *receita vs despesa por mês*.
+-- MAGIC 4. Adicione um **filtro** em `ano` / `nome_centro_custo` para deixar interativo.
 -- MAGIC
--- MAGIC 🧩 **CHALLENGE:** add two more metrics of your own — e.g. *average expense per
--- MAGIC entry*, *month-over-month growth*, or *top 3 cost centers by net result*.
+-- MAGIC 🧩 **DESAFIO:** crie mais duas métricas suas — ex.: *despesa média por
+-- MAGIC lançamento*, *crescimento mês a mês*, ou *top 3 centros de custo por resultado*.

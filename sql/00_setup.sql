@@ -1,56 +1,53 @@
 -- Databricks notebook source
 -- MAGIC %md
--- MAGIC # 00 · Setup — catalog, schema & volume
+-- MAGIC # 00 · Setup — catálogo, schema & volume
 -- MAGIC
--- MAGIC **🇬🇧** Creates the catalog/schema and a **volume** to upload the CSV into.
--- MAGIC Run this first, then upload the data file (see step 2 below).
--- MAGIC
--- MAGIC **🇧🇷** Cria o catálogo/schema e um **volume** para subir o CSV.
+-- MAGIC Cria o catálogo/schema e um **volume** para subir o CSV.
 -- MAGIC Rode este notebook primeiro e depois suba o arquivo (passo 2 abaixo).
 -- MAGIC
--- MAGIC > If your workspace does not have a `workspace` catalog, change `CATALOG`
--- MAGIC > below to one you can write to (e.g. `main` or your own catalog).
+-- MAGIC > Se o seu workspace não tiver o catálogo `workspace`, troque o `CATALOG`
+-- MAGIC > abaixo por um onde você consiga escrever (ex.: `main` ou um catálogo seu).
 
 -- COMMAND ----------
 
--- DBTITLE 1,Configuration (change here if needed)
--- These three names are reused by every notebook in this track.
+-- DBTITLE 1,Configuração (mude aqui se precisar)
+-- Estes três nomes são reusados por todos os notebooks deste track.
 USE CATALOG workspace;
-CREATE SCHEMA IF NOT EXISTS finance_training;
-USE SCHEMA finance_training;
+CREATE SCHEMA IF NOT EXISTS treino_financeiro;
+USE SCHEMA treino_financeiro;
 
--- A volume is managed cloud storage you can upload files into.
-CREATE VOLUME IF NOT EXISTS landing;
+-- Um volume é um armazenamento gerenciado onde você sobe arquivos.
+CREATE VOLUME IF NOT EXISTS entrada;
 
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ## Step 2 — upload the CSV to the volume
+-- MAGIC ## Passo 2 — suba o CSV no volume
 -- MAGIC
--- MAGIC The notebooks expect the file here:
+-- MAGIC Os notebooks esperam o arquivo aqui:
 -- MAGIC
 -- MAGIC ```
--- MAGIC /Volumes/workspace/finance_training/landing/corporate_finance_ledger.csv
+-- MAGIC /Volumes/workspace/treino_financeiro/entrada/lancamentos_financeiros.csv
 -- MAGIC ```
 -- MAGIC
--- MAGIC **UI:** Catalog → `workspace` → `finance_training` → `landing` →
--- MAGIC **Upload to this volume** → pick `data/corporate_finance_ledger.csv`.
+-- MAGIC **UI:** Catalog → `workspace` → `treino_financeiro` → `entrada` →
+-- MAGIC **Upload to this volume** → escolha `data/lancamentos_financeiros.csv`.
 -- MAGIC
--- MAGIC **CLI:** `databricks fs cp data/corporate_finance_ledger.csv dbfs:/Volumes/workspace/finance_training/landing/`
+-- MAGIC **CLI:** `databricks fs cp data/lancamentos_financeiros.csv dbfs:/Volumes/workspace/treino_financeiro/entrada/`
 
 -- COMMAND ----------
 
--- DBTITLE 1,Verify the upload
--- After uploading you should see the file listed here.
-LIST '/Volumes/workspace/finance_training/landing/';
+-- DBTITLE 1,Verifique o upload
+-- Depois de subir, o arquivo deve aparecer listado aqui.
+LIST '/Volumes/workspace/treino_financeiro/entrada/';
 
 -- COMMAND ----------
 
--- DBTITLE 1,Peek at the raw file
--- read_files() can read straight from the volume. Notice how messy it is!
+-- DBTITLE 1,Espie o arquivo bruto
+-- read_files() lê direto do volume. Repare como está bagunçado!
 SELECT *
 FROM read_files(
-  '/Volumes/workspace/finance_training/landing/corporate_finance_ledger.csv',
+  '/Volumes/workspace/treino_financeiro/entrada/lancamentos_financeiros.csv',
   format => 'csv',
   header => true
 )

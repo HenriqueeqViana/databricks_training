@@ -1,4 +1,4 @@
-entry_id,entry_date,cost_center,category,amount,type,description
+id_lancamento,data_lancamento,centro_custo,categoria,valor,tipo,descricao
 L100,2025-02-22,Marketing,SOFTWARE,"R$ 6,273.32",Despesa,  LICENCA DATABRICKS  
 L101,05/11/2025,Operações,Software,5622.22,DESPESA,Licenca Databricks
 L102,2025-01-04,Diretoria,Investimentos,"  38,690.68 ",receita,Resgate fundo

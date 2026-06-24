@@ -1,89 +1,87 @@
 -- Databricks notebook source
 -- MAGIC %md
--- MAGIC # 03 · Gold — dimension tables  🧩
+-- MAGIC # 03 · Gold — tabelas de dimensão  🧩
 -- MAGIC
--- MAGIC **🇬🇧** Gold = a **star schema**: small descriptive *dimension* tables around
--- MAGIC one central *fact* table. Each dimension holds the unique values of an
--- MAGIC attribute plus a surrogate key (`*_key`) the fact will point to.
+-- MAGIC Gold = um **star schema** (modelo estrela): pequenas tabelas de *dimensão*
+-- MAGIC em volta de uma tabela de *fato* central. Cada dimensão guarda os valores
+-- MAGIC únicos de um atributo + uma chave substituta (`sk_*`, *surrogate key*) que o
+-- MAGIC fato vai referenciar.
 -- MAGIC
--- MAGIC **🇧🇷** Gold = um **modelo estrela**: pequenas tabelas de *dimensão* em volta
--- MAGIC de uma tabela de *fato* central. Cada dimensão guarda os valores únicos de um
--- MAGIC atributo + uma chave substituta (`*_key`) que o fato vai referenciar.
--- MAGIC
--- MAGIC We build three dimensions: **cost center** (worked example), **category** and
--- MAGIC **date** (your challenges). The fact table comes in notebook `04`.
+-- MAGIC Montamos três dimensões: **centro de custo** (exemplo resolvido), **categoria**
+-- MAGIC e **data** (seus desafios). A tabela fato vem no notebook `04`.
 
 -- COMMAND ----------
 
 USE CATALOG workspace;
-USE SCHEMA finance_training;
+USE SCHEMA treino_financeiro;
 
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ## ✅ Worked example — `dim_cost_center`
+-- MAGIC ## ✅ Exemplo resolvido — `dim_centro_custo`
 -- MAGIC
--- MAGIC Take the distinct cost centers from silver and give each a surrogate key.
--- MAGIC `row_number()` is a simple, deterministic way to generate that key.
+-- MAGIC Pegue os centros de custo distintos da silver e dê a cada um uma chave
+-- MAGIC substituta. `row_number()` é um jeito simples e determinístico de gerá-la.
 
 -- COMMAND ----------
 
-CREATE OR REPLACE TABLE dim_cost_center AS
+CREATE OR REPLACE TABLE dim_centro_custo AS
 SELECT
-  row_number() OVER (ORDER BY cost_center) AS cost_center_key,
-  cost_center                              AS cost_center_name
-FROM (SELECT DISTINCT cost_center FROM silver_ledger);
+  row_number() OVER (ORDER BY centro_custo) AS sk_centro_custo,
+  centro_custo                              AS nome_centro_custo
+FROM (SELECT DISTINCT centro_custo FROM silver_lancamentos);
 
 -- COMMAND ----------
 
-SELECT * FROM dim_cost_center ORDER BY cost_center_key;
-
--- COMMAND ----------
-
--- MAGIC %md
--- MAGIC ## 🧩 CHALLENGE 1 — `dim_category`
--- MAGIC Build the category dimension exactly like `dim_cost_center` above, but for
--- MAGIC the `category` column. Columns: `category_key`, `category_name`.
--- MAGIC
--- MAGIC **Bonus:** add a `category_group` column ('Operating', 'People', 'Revenue'…)
--- MAGIC using a `CASE` expression.
-
--- COMMAND ----------
-
--- TODO: CREATE OR REPLACE TABLE dim_category AS ...
-
+SELECT * FROM dim_centro_custo ORDER BY sk_centro_custo;
 
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ## 🧩 CHALLENGE 2 — `dim_date`
--- MAGIC A date dimension has **one row per calendar day** with useful parts broken
--- MAGIC out, so the dashboard can group by year / month / quarter without date math.
+-- MAGIC ## 🧩 DESAFIO 1 — `dim_categoria`
+-- MAGIC Monte a dimensão de categoria igual à `dim_centro_custo` acima, mas para a
+-- MAGIC coluna `categoria`. Colunas: `sk_categoria`, `nome_categoria`.
 -- MAGIC
--- MAGIC Build it from the distinct `entry_date` values. Suggested columns:
+-- MAGIC **Bônus:** adicione uma coluna `grupo_categoria` ('Receita', 'Pessoas',
+-- MAGIC 'Operacional'…) usando uma expressão `CASE`.
+
+-- COMMAND ----------
+
+-- TODO: CREATE OR REPLACE TABLE dim_categoria AS ...
+
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ## 🧩 DESAFIO 2 — `dim_data`
+-- MAGIC Uma dimensão de data tem **uma linha por dia do calendário** com as partes
+-- MAGIC já separadas, para o dashboard agrupar por ano / mês / trimestre sem fazer
+-- MAGIC conta de data.
 -- MAGIC
--- MAGIC | column | hint |
+-- MAGIC Monte a partir dos valores distintos de `data_lancamento`. Colunas sugeridas:
+-- MAGIC
+-- MAGIC | coluna | dica |
 -- MAGIC |--------|------|
--- MAGIC | `date_key`   | `CAST(date_format(entry_date,'yyyyMMdd') AS INT)` (e.g. 20250222) |
--- MAGIC | `full_date`  | the date itself |
--- MAGIC | `year`       | `year(full_date)` |
--- MAGIC | `month`      | `month(full_date)` |
--- MAGIC | `month_name` | `date_format(full_date,'MMMM')` |
--- MAGIC | `quarter`    | `quarter(full_date)` |
--- MAGIC | `day`        | `day(full_date)` |
--- MAGIC | `weekday`    | `date_format(full_date,'EEEE')` |
+-- MAGIC | `sk_data`       | `CAST(date_format(data_completa,'yyyyMMdd') AS INT)` (ex.: 20250222) |
+-- MAGIC | `data_completa` | a própria data |
+-- MAGIC | `ano`           | `year(data_completa)` |
+-- MAGIC | `mes`           | `month(data_completa)` |
+-- MAGIC | `nome_mes`      | `date_format(data_completa,'MMMM')` |
+-- MAGIC | `trimestre`     | `quarter(data_completa)` |
+-- MAGIC | `dia`           | `day(data_completa)` |
+-- MAGIC | `dia_semana`    | `date_format(data_completa,'EEEE')` |
 -- MAGIC
--- MAGIC Using `yyyyMMdd` as the key is a classic date-dimension trick: it is unique,
--- MAGIC sortable, and human-readable.
+-- MAGIC Usar `yyyyMMdd` como chave é um truque clássico de dimensão de data: é único,
+-- MAGIC ordenável e legível por humanos.
 
 -- COMMAND ----------
 
--- TODO: CREATE OR REPLACE TABLE dim_date AS ...
+-- TODO: CREATE OR REPLACE TABLE dim_data AS ...
 
 
 -- COMMAND ----------
 
--- DBTITLE 1,Validate your dimensions
-SELECT 'dim_cost_center' AS dim, count(*) AS rows FROM dim_cost_center
-UNION ALL SELECT 'dim_category', count(*) FROM dim_category
-UNION ALL SELECT 'dim_date',     count(*) FROM dim_date;
+-- DBTITLE 1,Valide suas dimensões
+SELECT 'dim_centro_custo' AS dimensao, count(*) AS linhas FROM dim_centro_custo
+UNION ALL SELECT 'dim_categoria', count(*) FROM dim_categoria
+UNION ALL SELECT 'dim_data',      count(*) FROM dim_data;

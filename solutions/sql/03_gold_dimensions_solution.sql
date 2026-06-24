@@ -1,52 +1,52 @@
 -- Databricks notebook source
 -- MAGIC %md
--- MAGIC # 03 · Gold dimensions — SOLUTION
+-- MAGIC # 03 · Dimensões Gold — SOLUÇÃO
 
 -- COMMAND ----------
 
 USE CATALOG workspace;
-USE SCHEMA finance_training;
+USE SCHEMA treino_financeiro;
 
 -- COMMAND ----------
 
--- WORKED EXAMPLE
-CREATE OR REPLACE TABLE dim_cost_center AS
+-- EXEMPLO RESOLVIDO
+CREATE OR REPLACE TABLE dim_centro_custo AS
 SELECT
-  row_number() OVER (ORDER BY cost_center) AS cost_center_key,
-  cost_center                              AS cost_center_name
-FROM (SELECT DISTINCT cost_center FROM silver_ledger);
+  row_number() OVER (ORDER BY centro_custo) AS sk_centro_custo,
+  centro_custo                              AS nome_centro_custo
+FROM (SELECT DISTINCT centro_custo FROM silver_lancamentos);
 
 -- COMMAND ----------
 
--- CHALLENGE 1 — dim_category (with bonus category_group)
-CREATE OR REPLACE TABLE dim_category AS
+-- DESAFIO 1 — dim_categoria (com bônus grupo_categoria)
+CREATE OR REPLACE TABLE dim_categoria AS
 SELECT
-  row_number() OVER (ORDER BY category) AS category_key,
-  category                              AS category_name,
+  row_number() OVER (ORDER BY categoria) AS sk_categoria,
+  categoria                              AS nome_categoria,
   CASE
-    WHEN category IN ('Sales','Services Revenue','Interest','Investments') THEN 'Revenue'
-    WHEN category IN ('Payroll','Travel') THEN 'People'
-    ELSE 'Operating'
-  END AS category_group
-FROM (SELECT DISTINCT category FROM silver_ledger);
+    WHEN categoria IN ('Vendas','Receita de Serviços','Juros','Investimentos') THEN 'Receita'
+    WHEN categoria IN ('Folha de Pagamento','Viagens') THEN 'Pessoas'
+    ELSE 'Operacional'
+  END AS grupo_categoria
+FROM (SELECT DISTINCT categoria FROM silver_lancamentos);
 
 -- COMMAND ----------
 
--- CHALLENGE 2 — dim_date
-CREATE OR REPLACE TABLE dim_date AS
+-- DESAFIO 2 — dim_data
+CREATE OR REPLACE TABLE dim_data AS
 SELECT
-  CAST(date_format(full_date, 'yyyyMMdd') AS INT) AS date_key,
-  full_date,
-  year(full_date)                  AS year,
-  month(full_date)                 AS month,
-  date_format(full_date, 'MMMM')   AS month_name,
-  quarter(full_date)               AS quarter,
-  day(full_date)                   AS day,
-  date_format(full_date, 'EEEE')   AS weekday
-FROM (SELECT DISTINCT entry_date AS full_date FROM silver_ledger);
+  CAST(date_format(data_completa, 'yyyyMMdd') AS INT) AS sk_data,
+  data_completa,
+  year(data_completa)                  AS ano,
+  month(data_completa)                 AS mes,
+  date_format(data_completa, 'MMMM')   AS nome_mes,
+  quarter(data_completa)               AS trimestre,
+  day(data_completa)                   AS dia,
+  date_format(data_completa, 'EEEE')   AS dia_semana
+FROM (SELECT DISTINCT data_lancamento AS data_completa FROM silver_lancamentos);
 
 -- COMMAND ----------
 
-SELECT 'dim_cost_center' AS dim, count(*) AS rows FROM dim_cost_center
-UNION ALL SELECT 'dim_category', count(*) FROM dim_category
-UNION ALL SELECT 'dim_date',     count(*) FROM dim_date;
+SELECT 'dim_centro_custo' AS dimensao, count(*) AS linhas FROM dim_centro_custo
+UNION ALL SELECT 'dim_categoria', count(*) FROM dim_categoria
+UNION ALL SELECT 'dim_data',      count(*) FROM dim_data;

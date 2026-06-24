@@ -1,55 +1,55 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 02 · Silver — SOLUTION (PySpark)
+# MAGIC # 02 · Silver — SOLUÇÃO (PySpark)
 
 # COMMAND ----------
 
 from pyspark.sql import functions as F
 
 spark.sql("USE CATALOG workspace")
-spark.sql("USE SCHEMA finance_training")
-bronze = spark.table("bronze_ledger")
+spark.sql("USE SCHEMA treino_financeiro")
+bronze = spark.table("bronze_lancamentos")
 
 # COMMAND ----------
 
-cat = F.lower(F.trim(F.col("category")))
-ttype = F.lower(F.trim(F.col("type")))
+cat = F.lower(F.trim(F.col("categoria")))
+tipo = F.lower(F.trim(F.col("tipo")))
 
-category_std = (
+categoria_std = (
     F.when(cat.isin("software", "licencas", "licenças"), "Software")
-     .when(cat.isin("impostos", "tributos"), "Taxes")
-     .when(cat.isin("salarios", "salários", "folha", "folha de pagamento"), "Payroll")
-     .when(cat.isin("aluguel", "locacao"), "Rent")
+     .when(cat.isin("impostos", "tributos"), "Impostos")
+     .when(cat.isin("salarios", "salários", "folha", "folha de pagamento"), "Folha de Pagamento")
+     .when(cat.isin("aluguel", "locacao"), "Aluguel")
      .when(cat.isin("marketing", "publicidade", "anuncios"), "Marketing")
-     .when(cat.isin("viagens", "viagem"), "Travel")
-     .when(cat.isin("infraestrutura", "infra", "cloud"), "Infrastructure")
-     .when(cat.isin("servicos", "serviços", "consultoria"), "Services")
-     .when(cat.isin("material", "materiais", "suprimentos"), "Supplies")
-     .when(cat.isin("vendas", "venda mensal"), "Sales")
-     .when(cat.isin("servicos prestados", "serviços prestados", "prestacao de servicos"), "Services Revenue")
-     .when(cat.isin("juros", "rendimentos"), "Interest")
-     .when(cat.isin("investimentos", "aplicacoes"), "Investments")
-     .otherwise("Uncategorized")
+     .when(cat.isin("viagens", "viagem"), "Viagens")
+     .when(cat.isin("infraestrutura", "infra", "cloud"), "Infraestrutura")
+     .when(cat.isin("servicos", "serviços", "consultoria"), "Serviços")
+     .when(cat.isin("material", "materiais", "suprimentos"), "Materiais")
+     .when(cat.isin("vendas", "venda mensal"), "Vendas")
+     .when(cat.isin("servicos prestados", "serviços prestados", "prestacao de servicos"), "Receita de Serviços")
+     .when(cat.isin("juros", "rendimentos"), "Juros")
+     .when(cat.isin("investimentos", "aplicacoes"), "Investimentos")
+     .otherwise("Sem Categoria")
 )
 
 silver = (bronze.select(
-        F.trim("entry_id").alias("entry_id"),
+        F.trim("id_lancamento").alias("id_lancamento"),
         F.coalesce(
-            F.to_date("entry_date", "yyyy-MM-dd"),
-            F.to_date("entry_date", "dd/MM/yyyy"),
-        ).alias("entry_date"),
-        F.initcap(F.trim("cost_center")).alias("cost_center"),
-        category_std.alias("category"),
-        F.regexp_replace(F.col("amount"), r"[^0-9.]", "").cast("decimal(12,2)").alias("amount"),
-        F.when(ttype == "receita", "Income").when(ttype == "despesa", "Expense").alias("type"),
-        F.initcap(F.trim(F.regexp_replace("description", r"\s+", " "))).alias("description"),
+            F.to_date("data_lancamento", "yyyy-MM-dd"),
+            F.to_date("data_lancamento", "dd/MM/yyyy"),
+        ).alias("data_lancamento"),
+        F.initcap(F.trim("centro_custo")).alias("centro_custo"),
+        categoria_std.alias("categoria"),
+        F.regexp_replace(F.col("valor"), r"[^0-9.]", "").cast("decimal(12,2)").alias("valor"),
+        F.when(tipo == "receita", "Receita").when(tipo == "despesa", "Despesa").alias("tipo"),
+        F.initcap(F.trim(F.regexp_replace("descricao", r"\s+", " "))).alias("descricao"),
     )
-    .filter(F.col("entry_date").isNotNull() & F.col("amount").isNotNull())   # drop bad rows
-    .dropDuplicates())                                                       # dedupe
+    .filter(F.col("data_lancamento").isNotNull() & F.col("valor").isNotNull())   # descarta linhas ruins
+    .dropDuplicates())                                                           # dedupe
 
-silver.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("silver_ledger")
+silver.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("silver_lancamentos")
 
 # COMMAND ----------
 
-display(spark.sql("SELECT type, count(*) AS n FROM silver_ledger GROUP BY type"))
-display(spark.sql("SELECT category, count(*) AS n FROM silver_ledger GROUP BY category ORDER BY n DESC"))
+display(spark.sql("SELECT tipo, count(*) AS n FROM silver_lancamentos GROUP BY tipo"))
+display(spark.sql("SELECT categoria, count(*) AS n FROM silver_lancamentos GROUP BY categoria ORDER BY n DESC"))

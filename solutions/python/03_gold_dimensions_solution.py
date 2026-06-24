@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 03 · Gold dimensions — SOLUTION (PySpark)
+# MAGIC # 03 · Dimensões Gold — SOLUÇÃO (PySpark)
 
 # COMMAND ----------
 
@@ -8,45 +8,45 @@ from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 
 spark.sql("USE CATALOG workspace")
-spark.sql("USE SCHEMA finance_training")
-silver = spark.table("silver_ledger")
+spark.sql("USE SCHEMA treino_financeiro")
+silver = spark.table("silver_lancamentos")
 
 # COMMAND ----------
 
-# dim_cost_center (worked example)
-dim_cost_center = (silver.select("cost_center").distinct()
-    .withColumn("cost_center_key", F.row_number().over(Window.orderBy("cost_center")))
-    .select("cost_center_key", F.col("cost_center").alias("cost_center_name")))
-dim_cost_center.write.mode("overwrite").saveAsTable("dim_cost_center")
+# dim_centro_custo (exemplo resolvido)
+dim_centro_custo = (silver.select("centro_custo").distinct()
+    .withColumn("sk_centro_custo", F.row_number().over(Window.orderBy("centro_custo")))
+    .select("sk_centro_custo", F.col("centro_custo").alias("nome_centro_custo")))
+dim_centro_custo.write.mode("overwrite").saveAsTable("dim_centro_custo")
 
 # COMMAND ----------
 
-# dim_category (CHALLENGE 1 + bonus group)
-group = (F.when(F.col("category").isin("Sales", "Services Revenue", "Interest", "Investments"), "Revenue")
-          .when(F.col("category").isin("Payroll", "Travel"), "People")
-          .otherwise("Operating"))
+# dim_categoria (DESAFIO 1 + bônus grupo)
+grupo = (F.when(F.col("categoria").isin("Vendas", "Receita de Serviços", "Juros", "Investimentos"), "Receita")
+          .when(F.col("categoria").isin("Folha de Pagamento", "Viagens"), "Pessoas")
+          .otherwise("Operacional"))
 
-dim_category = (silver.select("category").distinct()
-    .withColumn("category_key", F.row_number().over(Window.orderBy("category")))
-    .withColumn("category_group", group)
-    .select("category_key", F.col("category").alias("category_name"), "category_group"))
-dim_category.write.mode("overwrite").saveAsTable("dim_category")
-
-# COMMAND ----------
-
-# dim_date (CHALLENGE 2)
-dim_date = (silver.select(F.col("entry_date").alias("full_date")).distinct()
-    .withColumn("date_key", F.date_format("full_date", "yyyyMMdd").cast("int"))
-    .withColumn("year", F.year("full_date"))
-    .withColumn("month", F.month("full_date"))
-    .withColumn("month_name", F.date_format("full_date", "MMMM"))
-    .withColumn("quarter", F.quarter("full_date"))
-    .withColumn("day", F.dayofmonth("full_date"))
-    .withColumn("weekday", F.date_format("full_date", "EEEE"))
-    .select("date_key", "full_date", "year", "month", "month_name", "quarter", "day", "weekday"))
-dim_date.write.mode("overwrite").saveAsTable("dim_date")
+dim_categoria = (silver.select("categoria").distinct()
+    .withColumn("sk_categoria", F.row_number().over(Window.orderBy("categoria")))
+    .withColumn("grupo_categoria", grupo)
+    .select("sk_categoria", F.col("categoria").alias("nome_categoria"), "grupo_categoria"))
+dim_categoria.write.mode("overwrite").saveAsTable("dim_categoria")
 
 # COMMAND ----------
 
-for t in ["dim_cost_center", "dim_category", "dim_date"]:
-    print(f"{t}: {spark.table(t).count()} rows")
+# dim_data (DESAFIO 2)
+dim_data = (silver.select(F.col("data_lancamento").alias("data_completa")).distinct()
+    .withColumn("sk_data", F.date_format("data_completa", "yyyyMMdd").cast("int"))
+    .withColumn("ano", F.year("data_completa"))
+    .withColumn("mes", F.month("data_completa"))
+    .withColumn("nome_mes", F.date_format("data_completa", "MMMM"))
+    .withColumn("trimestre", F.quarter("data_completa"))
+    .withColumn("dia", F.dayofmonth("data_completa"))
+    .withColumn("dia_semana", F.date_format("data_completa", "EEEE"))
+    .select("sk_data", "data_completa", "ano", "mes", "nome_mes", "trimestre", "dia", "dia_semana"))
+dim_data.write.mode("overwrite").saveAsTable("dim_data")
+
+# COMMAND ----------
+
+for t in ["dim_centro_custo", "dim_categoria", "dim_data"]:
+    print(f"{t}: {spark.table(t).count()} linhas")

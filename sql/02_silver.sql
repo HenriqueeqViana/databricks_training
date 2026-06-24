@@ -1,127 +1,123 @@
 -- Databricks notebook source
 -- MAGIC %md
--- MAGIC # 02 · Silver — clean & standardize  🧩
+-- MAGIC # 02 · Silver — limpar & padronizar  🧩
 -- MAGIC
--- MAGIC **🇬🇧** Silver = clean, typed, trustworthy data. We fix the mess from bronze:
--- MAGIC parse numbers and dates, standardize text, map Portuguese values to English,
--- MAGIC and remove duplicates / bad rows.
+-- MAGIC Silver = dado limpo, tipado e confiável. Corrigimos a bagunça do bronze:
+-- MAGIC número vira número, data vira data, texto padronizado, categorias unificadas
+-- MAGIC e duplicados/linhas ruins removidos.
 -- MAGIC
--- MAGIC **🇧🇷** Silver = dado limpo, tipado e confiável. Corrigimos a bagunça do
--- MAGIC bronze: número vira número, data vira data, texto padronizado, valores em
--- MAGIC português mapeados para inglês, e duplicados/linhas ruins removidos.
--- MAGIC
--- MAGIC ## How this notebook works
--- MAGIC The **`amount`** column is done for you as the worked example. Every other
--- MAGIC column has a `🧩 CHALLENGE` with a `TODO`. Replace the TODOs, then run the
--- MAGIC final `CREATE TABLE`. Reference answer: [`solutions/`](../solutions/).
+-- MAGIC ## Como este notebook funciona
+-- MAGIC A coluna **`valor`** já está pronta como exemplo resolvido. Cada outra coluna
+-- MAGIC tem um `🧩 DESAFIO` com um `TODO`. Substitua os TODOs e rode o `CREATE TABLE`
+-- MAGIC final. Resposta de referência: [`solutions/`](../solutions/).
 
 -- COMMAND ----------
 
 USE CATALOG workspace;
-USE SCHEMA finance_training;
+USE SCHEMA treino_financeiro;
 
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ## ✅ Worked example — cleaning `amount`
+-- MAGIC ## ✅ Exemplo resolvido — limpando `valor`
 -- MAGIC
--- MAGIC The raw values look like `R$ 6,273.32`, `5622.22`, `  4,233.82 `, `R$13446.67`.
--- MAGIC They all share one thing: the only characters we care about are **digits and
--- MAGIC the decimal dot**. So we strip everything else and cast to `DECIMAL`.
+-- MAGIC Os valores brutos vêm como `R$ 6,273.32`, `5622.22`, `  4,233.82 `, `R$13446.67`.
+-- MAGIC Todos têm algo em comum: os únicos caracteres que importam são **dígitos e o
+-- MAGIC ponto decimal**. Então removemos o resto e fazemos cast para `DECIMAL`.
 -- MAGIC
--- MAGIC `regexp_replace(amount, '[^0-9.]', '')` removes `R$`, spaces and thousands
--- MAGIC separators in one shot, leaving e.g. `6273.32`.
+-- MAGIC `regexp_replace(valor, '[^0-9.]', '')` remove `R$`, espaços e separador de
+-- MAGIC milhar de uma vez, deixando, por exemplo, `6273.32`.
 
 -- COMMAND ----------
 
 SELECT
-  amount                                              AS amount_raw,
-  regexp_replace(amount, '[^0-9.]', '')               AS amount_digits,
-  CAST(regexp_replace(amount, '[^0-9.]', '') AS DECIMAL(12,2)) AS amount_clean
-FROM bronze_ledger
+  valor                                              AS valor_bruto,
+  regexp_replace(valor, '[^0-9.]', '')               AS valor_digitos,
+  CAST(regexp_replace(valor, '[^0-9.]', '') AS DECIMAL(12,2)) AS valor_limpo
+FROM bronze_lancamentos
 LIMIT 15;
 
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ## 🧩 Now build the full silver table
+-- MAGIC ## 🧩 Agora monte a tabela silver completa
 -- MAGIC
--- MAGIC Fill in each `TODO` below. Hints are inline. The `amount` line is already
--- MAGIC done — use it as your template for style.
+-- MAGIC Preencha cada `TODO` abaixo. As dicas estão nos comentários. A linha do
+-- MAGIC `valor` já está pronta — use como modelo de estilo.
 
 -- COMMAND ----------
 
-CREATE OR REPLACE TABLE silver_ledger AS
-WITH cleaned AS (
+CREATE OR REPLACE TABLE silver_lancamentos AS
+WITH limpo AS (
   SELECT
-    -- id: just trim whitespace
-    trim(entry_id) AS entry_id,
+    -- id: só remove espaços
+    trim(id_lancamento) AS id_lancamento,
 
-    -- 🧩 CHALLENGE 1 — entry_date: parse BOTH formats into a real DATE.
-    -- The raw column mixes 'yyyy-MM-dd' and 'dd/MM/yyyy'.
-    -- Hint: coalesce(try_to_date(entry_date,'yyyy-MM-dd'),
-    --                try_to_date(entry_date,'dd/MM/yyyy'))
-    CAST(NULL AS DATE) AS entry_date,                       -- TODO
+    -- 🧩 DESAFIO 1 — data_lancamento: converta OS DOIS formatos para DATE de verdade.
+    -- A coluna bruta mistura 'yyyy-MM-dd' e 'dd/MM/yyyy'.
+    -- Dica: coalesce(try_to_date(data_lancamento,'yyyy-MM-dd'),
+    --                try_to_date(data_lancamento,'dd/MM/yyyy'))
+    CAST(NULL AS DATE) AS data_lancamento,                 -- TODO
 
-    -- 🧩 CHALLENGE 2 — cost_center: trim spaces and Title-Case it.
-    -- Hint: initcap(trim(cost_center)). (e.g. 'comercial ' -> 'Comercial')
-    'TODO' AS cost_center,                                  -- TODO
+    -- 🧩 DESAFIO 2 — centro_custo: tire espaços e deixe com Iniciais Maiúsculas.
+    -- Dica: initcap(trim(centro_custo))  (ex.: 'comercial ' -> 'Comercial')
+    'TODO' AS centro_custo,                                 -- TODO
 
-    -- 🧩 CHALLENGE 3 — category: standardize PT variants into ONE English label.
-    -- Hint: first normalize with lower(trim(category)), then a CASE/WHEN that maps
-    --   'software'/'licencas'/'licenças'        -> 'Software'
-    --   'impostos'/'tributos'                    -> 'Taxes'
-    --   'salarios'/'salários'/'folha'/'folha de pagamento' -> 'Payroll'
-    --   'vendas'/'venda mensal'                  -> 'Sales'
-    --   ... (see the README table for the full list) ...
-    --   blank/null                               -> 'Uncategorized'
-    'TODO' AS category,                                     -- TODO
+    -- 🧩 DESAFIO 3 — categoria: padronize as variantes em UM rótulo único.
+    -- Dica: normalize com lower(trim(categoria)) e use um CASE/WHEN mapeando:
+    --   'software'/'licencas'/'licenças'                  -> 'Software'
+    --   'impostos'/'tributos'                              -> 'Impostos'
+    --   'salarios'/'salários'/'folha'/'folha de pagamento' -> 'Folha de Pagamento'
+    --   'vendas'/'venda mensal'                            -> 'Vendas'
+    --   ... (veja a tabela completa no README / solutions) ...
+    --   em branco/nulo                                     -> 'Sem Categoria'
+    'TODO' AS categoria,                                    -- TODO
 
-    -- ✅ WORKED EXAMPLE — amount (done for you)
-    CAST(regexp_replace(amount, '[^0-9.]', '') AS DECIMAL(12,2)) AS amount,
+    -- ✅ EXEMPLO RESOLVIDO — valor (pronto para você)
+    CAST(regexp_replace(valor, '[^0-9.]', '') AS DECIMAL(12,2)) AS valor,
 
-    -- 🧩 CHALLENGE 4 — type: map Receita/Despesa to English (case-insensitive).
-    -- Hint: CASE WHEN lower(trim(type)) = 'receita' THEN 'Income'
-    --            WHEN lower(trim(type)) = 'despesa' THEN 'Expense' END
-    'TODO' AS type,                                         -- TODO
+    -- 🧩 DESAFIO 4 — tipo: normalize a caixa para 'Receita'/'Despesa'.
+    -- Dica: CASE WHEN lower(trim(tipo)) = 'receita' THEN 'Receita'
+    --            WHEN lower(trim(tipo)) = 'despesa' THEN 'Despesa' END
+    'TODO' AS tipo,                                         -- TODO
 
-    -- 🧩 CHALLENGE 5 — description: collapse extra spaces and Title-Case it.
-    -- Hint: initcap(trim(regexp_replace(description, '\\s+', ' ')))
-    'TODO' AS description
-  FROM bronze_ledger
+    -- 🧩 DESAFIO 5 — descricao: junte espaços repetidos e deixe Iniciais Maiúsculas.
+    -- Dica: initcap(trim(regexp_replace(descricao, '\\s+', ' ')))
+    'TODO' AS descricao
+  FROM bronze_lancamentos
 )
 SELECT *
-FROM cleaned
--- 🧩 CHALLENGE 6 — drop rows we cannot use (missing date or amount).
--- Hint: WHERE entry_date IS NOT NULL AND amount IS NOT NULL
+FROM limpo
+-- 🧩 DESAFIO 6 — descarte linhas que não dá para usar (sem data ou sem valor).
+-- Dica: WHERE data_lancamento IS NOT NULL AND valor IS NOT NULL
 ;
 
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ## 🧩 CHALLENGE 7 — remove duplicate rows
--- MAGIC The raw file contains a couple of exact duplicates. After the table above
--- MAGIC works, dedup it. One clean way:
+-- MAGIC ## 🧩 DESAFIO 7 — remova linhas duplicadas
+-- MAGIC O arquivo bruto tem algumas duplicatas exatas. Depois que a tabela acima
+-- MAGIC funcionar, remova as duplicatas. Um jeito limpo:
 -- MAGIC
 -- MAGIC ```sql
--- MAGIC CREATE OR REPLACE TABLE silver_ledger AS
--- MAGIC SELECT DISTINCT * FROM silver_ledger;
+-- MAGIC CREATE OR REPLACE TABLE silver_lancamentos AS
+-- MAGIC SELECT DISTINCT * FROM silver_lancamentos;
 -- MAGIC ```
--- MAGIC (Or use `ROW_NUMBER() OVER (PARTITION BY entry_id ORDER BY ...)` and keep `= 1`.)
+-- MAGIC (Ou use `ROW_NUMBER() OVER (PARTITION BY id_lancamento ORDER BY ...)` e fique com `= 1`.)
 
 -- COMMAND ----------
 
--- DBTITLE 1,Validate your silver table
--- Expect: no NULL dates/amounts, type only Income/Expense, no 'TODO' left.
+-- DBTITLE 1,Valide sua tabela silver
+-- Esperado: nenhuma data/valor NULL, tipo só Receita/Despesa, nenhum 'TODO' sobrando.
 SELECT
-  count(*)                                              AS rows,
-  count(DISTINCT entry_id)                              AS distinct_ids,
-  sum(CASE WHEN entry_date IS NULL THEN 1 ELSE 0 END)   AS null_dates,
-  sum(CASE WHEN amount IS NULL THEN 1 ELSE 0 END)       AS null_amounts,
-  count(DISTINCT type)                                  AS distinct_types
-FROM silver_ledger;
+  count(*)                                                  AS linhas,
+  count(DISTINCT id_lancamento)                             AS ids_distintos,
+  sum(CASE WHEN data_lancamento IS NULL THEN 1 ELSE 0 END)  AS datas_nulas,
+  sum(CASE WHEN valor IS NULL THEN 1 ELSE 0 END)            AS valores_nulos,
+  count(DISTINCT tipo)                                      AS tipos_distintos
+FROM silver_lancamentos;
 
 -- COMMAND ----------
 
-SELECT type, count(*) FROM silver_ledger GROUP BY type;        -- should be Income / Expense
-SELECT category, count(*) FROM silver_ledger GROUP BY category ORDER BY 2 DESC;
+SELECT tipo, count(*) FROM silver_lancamentos GROUP BY tipo;        -- deve ser Receita / Despesa
+SELECT categoria, count(*) FROM silver_lancamentos GROUP BY categoria ORDER BY 2 DESC;

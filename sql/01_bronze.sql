@@ -1,49 +1,45 @@
 -- Databricks notebook source
 -- MAGIC %md
--- MAGIC # 01 · Bronze — raw ingestion
+-- MAGIC # 01 · Bronze — ingestão crua
 -- MAGIC
--- MAGIC **🇬🇧** Bronze = the data **exactly as it arrived**. We read every column as
--- MAGIC text (no cleaning, no casting) and only add load metadata so we always know
--- MAGIC *where* and *when* a row came from. Never lose the raw truth.
--- MAGIC
--- MAGIC **🇧🇷** Bronze = o dado **como ele chegou**. Lemos tudo como texto (sem
--- MAGIC tratamento) e só adicionamos metadados de carga (origem + data/hora).
--- MAGIC Nada de transformação aqui — a verdade crua fica preservada.
+-- MAGIC Bronze = o dado **exatamente como ele chegou**. Lemos toda coluna como texto
+-- MAGIC (sem limpeza, sem cast) e só adicionamos metadados de carga para sempre saber
+-- MAGIC *de onde* e *quando* uma linha veio. Nunca perca a verdade crua.
 
 -- COMMAND ----------
 
 USE CATALOG workspace;
-USE SCHEMA finance_training;
+USE SCHEMA treino_financeiro;
 
 -- COMMAND ----------
 
--- DBTITLE 1,Create the bronze table from the CSV
--- We force every column to STRING on purpose: bronze keeps data raw and
--- never fails on a badly formatted value. Two helper columns record lineage.
-CREATE OR REPLACE TABLE bronze_ledger AS
+-- DBTITLE 1,Cria a tabela bronze a partir do CSV
+-- Forçamos toda coluna para STRING de propósito: bronze mantém o dado cru e nunca
+-- quebra com um valor mal formatado. Duas colunas auxiliares registram a origem.
+CREATE OR REPLACE TABLE bronze_lancamentos AS
 SELECT
-  CAST(entry_id    AS STRING) AS entry_id,
-  CAST(entry_date  AS STRING) AS entry_date,
-  CAST(cost_center AS STRING) AS cost_center,
-  CAST(category    AS STRING) AS category,
-  CAST(amount      AS STRING) AS amount,
-  CAST(type        AS STRING) AS type,
-  CAST(description AS STRING) AS description,
-  _metadata.file_path        AS _source_file,
-  current_timestamp()        AS _ingested_at
+  CAST(id_lancamento   AS STRING) AS id_lancamento,
+  CAST(data_lancamento AS STRING) AS data_lancamento,
+  CAST(centro_custo    AS STRING) AS centro_custo,
+  CAST(categoria       AS STRING) AS categoria,
+  CAST(valor           AS STRING) AS valor,
+  CAST(tipo            AS STRING) AS tipo,
+  CAST(descricao       AS STRING) AS descricao,
+  _metadata.file_path             AS _arquivo_origem,
+  current_timestamp()             AS _carregado_em
 FROM read_files(
-  '/Volumes/workspace/finance_training/landing/corporate_finance_ledger.csv',
+  '/Volumes/workspace/treino_financeiro/entrada/lancamentos_financeiros.csv',
   format            => 'csv',
   header            => true,
-  inferSchema       => false,   -- everything stays as text in bronze
+  inferSchema       => false,   -- tudo continua como texto no bronze
   rescuedDataColumn => '_rescued'
 );
 
 -- COMMAND ----------
 
--- DBTITLE 1,Sanity check
-SELECT count(*) AS row_count FROM bronze_ledger;
+-- DBTITLE 1,Conferência rápida
+SELECT count(*) AS qtd_linhas FROM bronze_lancamentos;
 
 -- COMMAND ----------
 
-SELECT * FROM bronze_ledger LIMIT 20;
+SELECT * FROM bronze_lancamentos LIMIT 20;

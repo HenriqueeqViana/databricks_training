@@ -1,82 +1,79 @@
 -- Databricks notebook source
 -- MAGIC %md
--- MAGIC # 04 · Gold — fact table  🧩
+-- MAGIC # 04 · Gold — tabela fato  🧩
 -- MAGIC
--- MAGIC **🇬🇧** The **fact** table is the heart of the star schema: one row per
--- MAGIC business event (here, one ledger entry). It stores the **measures** (the
--- MAGIC numbers we add up) and **foreign keys** pointing to each dimension —
--- MAGIC *not* the descriptive text, which lives in the dimensions.
--- MAGIC
--- MAGIC **🇧🇷** A tabela **fato** é o coração do modelo estrela: uma linha por evento
--- MAGIC (aqui, um lançamento). Guarda as **métricas** (os números que somamos) e as
--- MAGIC **chaves estrangeiras** para cada dimensão — não o texto descritivo, que
--- MAGIC fica nas dimensões.
+-- MAGIC A tabela **fato** é o coração do modelo estrela: uma linha por evento de
+-- MAGIC negócio (aqui, um lançamento). Ela guarda as **métricas** (os números que
+-- MAGIC somamos) e as **chaves estrangeiras** apontando para cada dimensão — *não* o
+-- MAGIC texto descritivo, que mora nas dimensões.
 
 -- COMMAND ----------
 
 USE CATALOG workspace;
-USE SCHEMA finance_training;
+USE SCHEMA treino_financeiro;
 
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ## ✅ Worked example — the signed measure
+-- MAGIC ## ✅ Exemplo resolvido — a métrica com sinal
 -- MAGIC
--- MAGIC `amount` in silver is always positive. For a P&L we want **income to add**
--- MAGIC and **expense to subtract**, so we derive a `signed_amount`:
+-- MAGIC O `valor` na silver é sempre positivo. Para um resultado (P&L) queremos
+-- MAGIC **receita somando** e **despesa subtraindo**, então derivamos um
+-- MAGIC `valor_sinalizado`:
 -- MAGIC
 -- MAGIC ```sql
--- MAGIC CASE WHEN type = 'Income' THEN amount ELSE -amount END
+-- MAGIC CASE WHEN tipo = 'Receita' THEN valor ELSE -valor END
 -- MAGIC ```
--- MAGIC Sum that column and you get the **net result** directly.
+-- MAGIC Some essa coluna e você tem o **resultado líquido** direto.
 
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ## 🧩 CHALLENGE — build `fact_ledger`
+-- MAGIC ## 🧩 DESAFIO — monte `fato_lancamentos`
 -- MAGIC
--- MAGIC Join `silver_ledger` to each dimension to swap descriptive text for the
--- MAGIC surrogate keys. The skeleton is below — fill in the two `TODO` joins and the
--- MAGIC two `TODO` key columns. (The cost-center join is done as your template.)
+-- MAGIC Junte `silver_lancamentos` a cada dimensão para trocar o texto descritivo
+-- MAGIC pelas chaves substitutas. O esqueleto está abaixo — preencha os dois `TODO`
+-- MAGIC (o join e a chave de categoria). O join de centro de custo já está pronto
+-- MAGIC como modelo.
 
 -- COMMAND ----------
 
-CREATE OR REPLACE TABLE fact_ledger AS
+CREATE OR REPLACE TABLE fato_lancamentos AS
 SELECT
-  s.entry_id,
+  s.id_lancamento,
 
-  -- date key: same yyyyMMdd formula you used to build dim_date
-  CAST(date_format(s.entry_date, 'yyyyMMdd') AS INT) AS date_key,        -- ✅ done
+  -- chave de data: a mesma fórmula yyyyMMdd usada para montar a dim_data
+  CAST(date_format(s.data_lancamento, 'yyyyMMdd') AS INT) AS sk_data,            -- ✅ pronto
 
-  cc.cost_center_key,                                                    -- ✅ done (from join below)
+  cc.sk_centro_custo,                                                            -- ✅ pronto (do join abaixo)
 
-  -- 🧩 TODO: bring in the category surrogate key
-  NULL AS category_key,                                                  -- TODO -> cat.category_key
+  -- 🧩 TODO: traga a chave substituta de categoria
+  NULL AS sk_categoria,                                                          -- TODO -> cat.sk_categoria
 
-  -- measures
-  s.type,
-  s.amount,
-  CASE WHEN s.type = 'Income' THEN s.amount ELSE -s.amount END AS signed_amount,  -- ✅ worked example
-  s.description
-FROM silver_ledger s
-JOIN dim_cost_center cc ON s.cost_center = cc.cost_center_name           -- ✅ template join
--- 🧩 TODO: JOIN dim_category cat ON s.category = cat.category_name
+  -- métricas
+  s.tipo,
+  s.valor,
+  CASE WHEN s.tipo = 'Receita' THEN s.valor ELSE -s.valor END AS valor_sinalizado, -- ✅ exemplo resolvido
+  s.descricao
+FROM silver_lancamentos s
+JOIN dim_centro_custo cc ON s.centro_custo = cc.nome_centro_custo                -- ✅ join modelo
+-- 🧩 TODO: JOIN dim_categoria cat ON s.categoria = cat.nome_categoria
 ;
 
 -- COMMAND ----------
 
--- DBTITLE 1,Validate the fact table
--- Every fact row must match a dimension row (no orphan/NULL keys).
+-- DBTITLE 1,Valide a tabela fato
+-- Toda linha do fato precisa casar com uma linha de dimensão (sem chave NULL/órfã).
 SELECT
-  count(*)                                                  AS fact_rows,
-  sum(CASE WHEN cost_center_key IS NULL THEN 1 ELSE 0 END)  AS missing_cost_center_key,
-  sum(CASE WHEN category_key   IS NULL THEN 1 ELSE 0 END)   AS missing_category_key,
-  sum(CASE WHEN date_key        IS NULL THEN 1 ELSE 0 END)  AS missing_date_key
-FROM fact_ledger;
+  count(*)                                                AS linhas_fato,
+  sum(CASE WHEN sk_centro_custo IS NULL THEN 1 ELSE 0 END) AS sk_centro_custo_faltando,
+  sum(CASE WHEN sk_categoria   IS NULL THEN 1 ELSE 0 END)  AS sk_categoria_faltando,
+  sum(CASE WHEN sk_data        IS NULL THEN 1 ELSE 0 END)  AS sk_data_faltando
+FROM fato_lancamentos;
 
 -- COMMAND ----------
 
--- DBTITLE 1,Quick smoke test — net result by type
-SELECT type, count(*) AS entries, sum(amount) AS gross, sum(signed_amount) AS net
-FROM fact_ledger
-GROUP BY type;
+-- DBTITLE 1,Teste rápido — resultado por tipo
+SELECT tipo, count(*) AS lancamentos, sum(valor) AS bruto, sum(valor_sinalizado) AS liquido
+FROM fato_lancamentos
+GROUP BY tipo;

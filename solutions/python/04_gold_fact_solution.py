@@ -1,38 +1,38 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 04 · Gold fact — SOLUTION (PySpark)
+# MAGIC # 04 · Fato Gold — SOLUÇÃO (PySpark)
 
 # COMMAND ----------
 
 from pyspark.sql import functions as F
 
 spark.sql("USE CATALOG workspace")
-spark.sql("USE SCHEMA finance_training")
+spark.sql("USE SCHEMA treino_financeiro")
 
-silver          = spark.table("silver_ledger")
-dim_cost_center = spark.table("dim_cost_center")
-dim_category    = spark.table("dim_category")
+silver           = spark.table("silver_lancamentos")
+dim_centro_custo = spark.table("dim_centro_custo")
+dim_categoria    = spark.table("dim_categoria")
 
 # COMMAND ----------
 
-fact = (silver
-    .withColumn("date_key", F.date_format("entry_date", "yyyyMMdd").cast("int"))
-    .withColumn("signed_amount",
-                F.when(F.col("type") == "Income", F.col("amount")).otherwise(-F.col("amount")))
-    .join(dim_cost_center, silver.cost_center == dim_cost_center.cost_center_name)
-    .join(dim_category,    silver.category    == dim_category.category_name)
-    .select("entry_id", "date_key", "cost_center_key", "category_key",
-            "type", "amount", "signed_amount", "description"))
+fato = (silver
+    .withColumn("sk_data", F.date_format("data_lancamento", "yyyyMMdd").cast("int"))
+    .withColumn("valor_sinalizado",
+                F.when(F.col("tipo") == "Receita", F.col("valor")).otherwise(-F.col("valor")))
+    .join(dim_centro_custo, silver.centro_custo == dim_centro_custo.nome_centro_custo)
+    .join(dim_categoria,    silver.categoria    == dim_categoria.nome_categoria)
+    .select("id_lancamento", "sk_data", "sk_centro_custo", "sk_categoria",
+            "tipo", "valor", "valor_sinalizado", "descricao"))
 
-fact.write.mode("overwrite").saveAsTable("fact_ledger")
+fato.write.mode("overwrite").saveAsTable("fato_lancamentos")
 
 # COMMAND ----------
 
 display(spark.sql("""
 SELECT
-  count(*)                                                  AS fact_rows,
-  sum(CASE WHEN cost_center_key IS NULL THEN 1 ELSE 0 END)  AS missing_cost_center_key,
-  sum(CASE WHEN category_key   IS NULL THEN 1 ELSE 0 END)   AS missing_category_key,
-  sum(CASE WHEN date_key        IS NULL THEN 1 ELSE 0 END)  AS missing_date_key
-FROM fact_ledger
+  count(*)                                                AS linhas_fato,
+  sum(CASE WHEN sk_centro_custo IS NULL THEN 1 ELSE 0 END) AS sk_centro_custo_faltando,
+  sum(CASE WHEN sk_categoria   IS NULL THEN 1 ELSE 0 END)  AS sk_categoria_faltando,
+  sum(CASE WHEN sk_data        IS NULL THEN 1 ELSE 0 END)  AS sk_data_faltando
+FROM fato_lancamentos
 """))

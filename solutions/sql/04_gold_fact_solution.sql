@@ -1,33 +1,33 @@
 -- Databricks notebook source
 -- MAGIC %md
--- MAGIC # 04 · Gold fact — SOLUTION
+-- MAGIC # 04 · Fato Gold — SOLUÇÃO
 
 -- COMMAND ----------
 
 USE CATALOG workspace;
-USE SCHEMA finance_training;
+USE SCHEMA treino_financeiro;
 
 -- COMMAND ----------
 
-CREATE OR REPLACE TABLE fact_ledger AS
+CREATE OR REPLACE TABLE fato_lancamentos AS
 SELECT
-  s.entry_id,
-  CAST(date_format(s.entry_date, 'yyyyMMdd') AS INT)          AS date_key,
-  cc.cost_center_key,
-  cat.category_key,
-  s.type,
-  s.amount,
-  CASE WHEN s.type = 'Income' THEN s.amount ELSE -s.amount END AS signed_amount,
-  s.description
-FROM silver_ledger s
-JOIN dim_cost_center cc ON s.cost_center = cc.cost_center_name
-JOIN dim_category    cat ON s.category    = cat.category_name;
+  s.id_lancamento,
+  CAST(date_format(s.data_lancamento, 'yyyyMMdd') AS INT)             AS sk_data,
+  cc.sk_centro_custo,
+  cat.sk_categoria,
+  s.tipo,
+  s.valor,
+  CASE WHEN s.tipo = 'Receita' THEN s.valor ELSE -s.valor END         AS valor_sinalizado,
+  s.descricao
+FROM silver_lancamentos s
+JOIN dim_centro_custo cc ON s.centro_custo = cc.nome_centro_custo
+JOIN dim_categoria    cat ON s.categoria    = cat.nome_categoria;
 
 -- COMMAND ----------
 
 SELECT
-  count(*)                                                  AS fact_rows,
-  sum(CASE WHEN cost_center_key IS NULL THEN 1 ELSE 0 END)  AS missing_cost_center_key,
-  sum(CASE WHEN category_key   IS NULL THEN 1 ELSE 0 END)   AS missing_category_key,
-  sum(CASE WHEN date_key        IS NULL THEN 1 ELSE 0 END)  AS missing_date_key
-FROM fact_ledger;
+  count(*)                                                AS linhas_fato,
+  sum(CASE WHEN sk_centro_custo IS NULL THEN 1 ELSE 0 END) AS sk_centro_custo_faltando,
+  sum(CASE WHEN sk_categoria   IS NULL THEN 1 ELSE 0 END)  AS sk_categoria_faltando,
+  sum(CASE WHEN sk_data        IS NULL THEN 1 ELSE 0 END)  AS sk_data_faltando
+FROM fato_lancamentos;
