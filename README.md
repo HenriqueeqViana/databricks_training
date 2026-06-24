@@ -18,8 +18,8 @@ Há **dois tracks paralelos** que fazem exatamente a mesma coisa:
 Escolha o que preferir — os passos, nomes de tabela e resultados são idênticos.
 
 > O instrutor mostra **um exemplo resolvido** em cada etapa. Tudo marcado como
-> `🧩 DESAFIO` / `TODO` é para **você** completar. As respostas estão em
-> [`solutions/`](solutions/).
+> `🧩 DESAFIO` / `TODO` é para **você** completar. As respostas de referência
+> ficam com o **instrutor** (fora deste repositório, de propósito).
 
 ---
 
@@ -134,6 +134,5 @@ databricks_training/
 │   └── lancamentos_financeiros.csv    # os dados de exemplo (bagunçados)
 ├── sql/                               # track SQL (00 → 05)
 ├── python/                            # track PySpark (00 → 05)
-├── solutions/                         # respostas de referência (instrutor)
 └── README.md
 ```

@@ -9,7 +9,7 @@
 -- MAGIC ## Como este notebook funciona
 -- MAGIC A coluna **`valor`** já está pronta como exemplo resolvido. Cada outra coluna
 -- MAGIC tem um `🧩 DESAFIO` com um `TODO`. Substitua os TODOs e rode o `CREATE TABLE`
--- MAGIC final. Resposta de referência: [`solutions/`](../solutions/).
+-- MAGIC final. A resposta de referência fica com o instrutor.
 
 -- COMMAND ----------
 
@@ -69,7 +69,8 @@ WITH limpo AS (
     --   'impostos'/'tributos'                              -> 'Impostos'
     --   'salarios'/'salários'/'folha'/'folha de pagamento' -> 'Folha de Pagamento'
     --   'vendas'/'venda mensal'                            -> 'Vendas'
-    --   ... (veja a tabela completa no README / solutions) ...
+    --   ... descubra as variantes com:
+    --       SELECT DISTINCT lower(trim(categoria)) FROM bronze_lancamentos ORDER BY 1; ...
     --   em branco/nulo                                     -> 'Sem Categoria'
     'TODO' AS categoria,                                    -- TODO
 

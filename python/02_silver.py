@@ -8,7 +8,7 @@
 # MAGIC ## Como este notebook funciona
 # MAGIC A coluna **`valor`** já está pronta como exemplo resolvido. Cada outra coluna
 # MAGIC tem um `🧩 DESAFIO` com um `TODO`. Preencha e grave a tabela.
-# MAGIC Resposta de referência: [`solutions/`](../solutions/).
+# MAGIC A resposta de referência fica com o instrutor.
 
 # COMMAND ----------
 
@@ -61,7 +61,8 @@ silver = bronze.select(
     # Dica: monte cat = F.lower(F.trim("categoria")) e encadeie
     #   F.when(cat.isin("software","licencas","licenças"), "Software")
     #    .when(cat.isin("impostos","tributos"), "Impostos")
-    #    ... (mapa completo no README) ...
+    #    ... descubra as variantes com:
+    #        spark.sql("SELECT DISTINCT lower(trim(categoria)) FROM bronze_lancamentos ORDER BY 1").show(50) ...
     #    .when((cat == "") | cat.isNull(), "Sem Categoria")
     F.lit("TODO").alias("categoria"),                                  # TODO
 
