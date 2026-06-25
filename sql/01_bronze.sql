@@ -43,3 +43,15 @@ SELECT count(*) AS qtd_linhas FROM bronze_lancamentos;
 -- COMMAND ----------
 
 SELECT * FROM bronze_lancamentos LIMIT 20;
+
+-- COMMAND ----------
+
+describe  bronze_lancamentos
+
+-- COMMAND ----------
+
+SELECT COUNT(*), id_lancamento  FROM bronze_lancamentos group by id_lancamento having count(*)> 1
+
+-- COMMAND ----------
+
+SELECT *  FROM bronze_lancamentos where id_lancamento = 'L107'

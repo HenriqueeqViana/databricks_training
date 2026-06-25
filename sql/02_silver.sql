@@ -34,7 +34,7 @@ SELECT
   valor                                              AS valor_bruto,
   regexp_replace(valor, '[^0-9.]', '')               AS valor_digitos,
   CAST(regexp_replace(valor, '[^0-9.]', '') AS DECIMAL(12,2)) AS valor_limpo
-FROM bronze_lancamentos
+FROM bronze_lancamentos 
 LIMIT 15;
 
 -- COMMAND ----------
@@ -44,6 +44,46 @@ LIMIT 15;
 -- MAGIC
 -- MAGIC Preencha cada `TODO` abaixo. As dicas estão nos comentários. A linha do
 -- MAGIC `valor` já está pronta — use como modelo de estilo.
+
+-- COMMAND ----------
+
+ SELECT
+    -- id: só remove espaços
+    trim(id_lancamento) AS id_lancamento,
+
+    -- DESAFIO 1 — data_lancamento: converta OS DOIS formatos para DATE de verdade.
+    -- A coluna bruta mistura 'yyyy-MM-dd' e 'dd/MM/yyyy'.
+    -- Dica: coalesce(try_to_date(data_lancamento,'yyyy-MM-dd'),
+    --                try_to_date(data_lancamento,'dd/MM/yyyy'))
+    CAST(NULL AS DATE) AS data_lancamento,                 -- TODO
+
+    -- DESAFIO 2 — centro_custo: tire espaços e deixe com Iniciais Maiúsculas.
+    -- Dica: initcap(trim(centro_custo))  (ex.: 'comercial ' -> 'Comercial')
+    'TODO' AS centro_custo,                                 -- TODO
+
+    -- DESAFIO 3 — categoria: padronize as variantes em UM rótulo único.
+    -- Dica: normalize com lower(trim(categoria)) e use um CASE/WHEN mapeando:
+    --   'software'/'licencas'/'licenças'                  -> 'Software'
+    --   'impostos'/'tributos'                              -> 'Impostos'
+    --   'salarios'/'salários'/'folha'/'folha de pagamento' -> 'Folha de Pagamento'
+    --   'vendas'/'venda mensal'                            -> 'Vendas'
+    --   ... descubra as variantes com:
+    --       SELECT DISTINCT lower(trim(categoria)) FROM bronze_lancamentos ORDER BY 1; ...
+    --   em branco/nulo                                     -> 'Sem Categoria'
+    'TODO' AS categoria,                                    -- TODO
+
+    -- EXEMPLO RESOLVIDO — valor (pronto para você)
+    CAST(regexp_replace(valor, '[^0-9.]', '') AS DECIMAL(12,2)) AS valor,
+
+    -- DESAFIO 4 — tipo: normalize a caixa para 'Receita'/'Despesa'.
+    -- Dica: CASE WHEN lower(trim(tipo)) = 'receita' THEN 'Receita'
+    --            WHEN lower(trim(tipo)) = 'despesa' THEN 'Despesa' END
+    'TODO' AS tipo,                                         -- TODO
+
+    -- DESAFIO 5 — descricao: junte espaços repetidos e deixe Iniciais Maiúsculas.
+    -- Dica: initcap(trim(regexp_replace(descricao, '\\s+', ' ')))
+    'TODO' AS descricao
+  FROM bronze_lancamentos
 
 -- COMMAND ----------
 
