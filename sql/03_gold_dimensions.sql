@@ -25,6 +25,17 @@ USE SCHEMA treino_financeiro;
 
 -- COMMAND ----------
 
+SELECT DISTINCT centro_custo FROM silver_lancamentos
+
+-- COMMAND ----------
+
+SELECT
+  row_number() OVER (ORDER BY centro_custo) AS sk_centro_custo,
+  centro_custo                              AS nome_centro_custo
+FROM (SELECT DISTINCT centro_custo FROM silver_lancamentos);
+
+-- COMMAND ----------
+
 CREATE OR REPLACE TABLE dim_centro_custo AS
 SELECT
   row_number() OVER (ORDER BY centro_custo) AS sk_centro_custo,

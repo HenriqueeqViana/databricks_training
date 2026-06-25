@@ -71,7 +71,7 @@ WITH limpo AS (
     try_to_date(data_lancamento, 'dd/MM/yyyy'), '1900-01-01'
 ) AS data_lancamento,
     -- DESAFIO 2 — trim + iniciais maiúsculas
-    initcap(trim(centro_custo)) AS centro_custo,
+    initcap(trim(translate(lower(centro_custo), 'áéíóúãõâêîôûç', 'aeiouaoaeiouc'))) AS centro_custo,
 
     -- DESAFIO 3 — padroniza categorias
     CASE lower(trim(translate(categoria, 'áéíóúãõâêîôûç', 'aeiouaoaeiouc')))
@@ -112,4 +112,8 @@ WHERE data_lancamento IS NOT NULL AND valor IS NOT NULL;
 -- COMMAND ----------
 
 SELECT tipo, count(*) FROM silver_lancamentos GROUP BY tipo;
+
+
+-- COMMAND ----------
+
 SELECT categoria, count(*) FROM silver_lancamentos GROUP BY categoria ORDER BY 2 DESC;
