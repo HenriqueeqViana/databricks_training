@@ -1,10 +1,10 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 06 · Desafio: Federation + Lakeflow — Grupo Zema
+# MAGIC # 06 · Desafio: Federation + Lakeflow
 # MAGIC
-# MAGIC **Cenário:** o Grupo Zema tem duas "estruturas" que não se comunicam entre si:
-# MAGIC - Lojas Zema -> sabe quem comprou o quê
-# MAGIC - Zema Financeira -> sabe quem pegou crédito
+# MAGIC **Cenário:** uma empresa tem duas "estruturas" que não se comunicam entre si:
+# MAGIC - Lojas -> sabe quem comprou o quê
+# MAGIC - Financeira -> sabe quem pegou crédito
 # MAGIC
 # MAGIC No mundo real essas fontes são bancos separados. Aqui elas vivem num
 # MAGIC **PostgreSQL** real, e o Databricks lê via **Lakehouse Federation**.
@@ -26,9 +26,9 @@ dbutils.widgets.text("pg_user", "teste", "Usuario")
 dbutils.widgets.text("pg_database", "teste", "Database")
 
 # Secret scope/key configurados previamente:
-#   databricks secrets create-scope zema
-#   databricks secrets put-secret zema pg_password
-SECRET_SCOPE = "zema"
+#   databricks secrets create-scope treino
+#   databricks secrets put-secret treino pg_password
+SECRET_SCOPE = "treino"
 SECRET_KEY   = "pg_password"
 
 host = dbutils.widgets.get("pg_host")
@@ -44,7 +44,7 @@ assert host and port, "Preencha os widgets pg_host e pg_port antes de rodar."
 # DBTITLE 1,Cria a Connection e o Foreign Catalog (Federation)
 # A senha vem do secret; o valor nunca aparece no código nem no histórico.
 spark.sql(f"""
-CREATE CONNECTION IF NOT EXISTS zema_postgres TYPE postgresql
+CREATE CONNECTION IF NOT EXISTS conn_postgres TYPE postgresql
 OPTIONS (
   host '{host}',
   port '{port}',
@@ -54,13 +54,13 @@ OPTIONS (
 """)
 
 spark.sql(f"""
-CREATE FOREIGN CATALOG IF NOT EXISTS zema
-USING CONNECTION zema_postgres
+CREATE FOREIGN CATALOG IF NOT EXISTS externo
+USING CONNECTION conn_postgres
 OPTIONS (database '{database}')
 """)
 
 # Confere que as duas fontes apareceram via Federation
-display(spark.sql("SHOW TABLES IN zema.public"))
+display(spark.sql("SHOW TABLES IN externo.public"))
 
 # COMMAND ----------
 
@@ -70,8 +70,8 @@ display(spark.sql("SHOW TABLES IN zema.public"))
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT * FROM zema.public.vendas_lojas;
-# MAGIC -- SELECT * FROM zema.public.contratos_credito;
+# MAGIC SELECT * FROM externo.public.vendas_lojas;
+# MAGIC -- SELECT * FROM externo.public.contratos_credito;
 
 # COMMAND ----------
 
@@ -94,8 +94,8 @@ display(spark.sql("SHOW TABLES IN zema.public"))
 # MAGIC   v.___,
 # MAGIC   SUM(v.___) AS receita_total,
 # MAGIC   SUM(c.___) AS credito_total
-# MAGIC FROM zema.public.vendas_lojas v
-# MAGIC JOIN zema.public.contratos_credito c ON v.___ = c.___
+# MAGIC FROM externo.public.vendas_lojas v
+# MAGIC JOIN externo.public.contratos_credito c ON v.___ = c.___
 # MAGIC GROUP BY v.___
 
 # COMMAND ----------
@@ -121,4 +121,4 @@ display(spark.sql("SHOW TABLES IN zema.public"))
 # MAGIC   trás de um pipeline Lakeflow).
 # MAGIC
 # MAGIC No mundo real, esse mesmo SQL roda automaticamente todo dia, com os dados
-# MAGIC vindo direto dos sistemas do Zema.
+# MAGIC vindo direto dos sistemas de origem.
