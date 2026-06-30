@@ -20,12 +20,13 @@
 
 -- MAGIC %md
 -- MAGIC ## Setup do instrutor — conexão (rode uma vez)
--- MAGIC Preencha os widgets que aparecem no topo do notebook. A senha NÃO vai aqui:
--- MAGIC configure antes o secret no Databricks CLI:
--- MAGIC ```bash
--- MAGIC databricks secrets create-scope treino
--- MAGIC databricks secrets put-secret treino pg_password
--- MAGIC ```
+-- MAGIC Tudo por widget, direto no notebook — sem CLI. Os widgets aparecem no topo;
+-- MAGIC o instrutor preenche host/porta/usuário/senha em aula. Como os valores são
+-- MAGIC digitados em runtime, **nada de credencial fica no arquivo versionado**.
+-- MAGIC
+-- MAGIC > Observação: o Databricks não cria *secret scope* por SQL (só via CLI/API).
+-- MAGIC > Para treino, o widget de senha resolve. Em produção, troque por
+-- MAGIC > `secret('escopo','chave')` com um secret scope de verdade.
 
 -- COMMAND ----------
 
@@ -33,16 +34,17 @@ CREATE WIDGET TEXT pg_host DEFAULT '';
 CREATE WIDGET TEXT pg_port DEFAULT '';
 CREATE WIDGET TEXT pg_user DEFAULT 'teste';
 CREATE WIDGET TEXT pg_database DEFAULT 'teste';
+CREATE WIDGET TEXT pg_password DEFAULT '';
 
 -- COMMAND ----------
 
--- A senha é lida do secret; o valor nunca aparece no código nem no histórico.
+-- Senha vem do widget (digitada em runtime); não fica escrita no notebook.
 CREATE CONNECTION IF NOT EXISTS conn_postgres TYPE postgresql
 OPTIONS (
   host '${pg_host}',
   port '${pg_port}',
   user '${pg_user}',
-  password secret('treino', 'pg_password')
+  password '${pg_password}'
 );
 
 -- COMMAND ----------
