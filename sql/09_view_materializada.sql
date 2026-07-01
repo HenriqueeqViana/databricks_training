@@ -108,9 +108,104 @@ SELECT 'materialized (refresh)' AS origem, * FROM mv_resumo_cidade WHERE cidade 
 -- COMMAND ----------
 
 -- MAGIC %md
+-- MAGIC ## Tabelas disponíveis na fonte (Postgres via Federation)
+-- MAGIC - `externo.public.vendas_lojas` — venda_id, cidade, cliente_id, valor_venda
+-- MAGIC - `externo.public.contratos_credito` — cliente_id, tipo_produto, valor_contratado, status
+-- MAGIC - `externo.public.clientes` — cliente_id, nome, cidade
+-- MAGIC - `externo.public.produtos_credito` — tipo_produto, nome_produto, taxa_juros_mensal
+-- MAGIC - `externo.public.metas_cidade` — cidade, meta_receita
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ## Sua vez 3 — ticket médio por cidade (MV)
+-- MAGIC Crie `mv_ticket_medio_cidade`: o **valor médio** de venda por cidade e quantas
+-- MAGIC vendas houve. Dica: `AVG(valor_venda)`, `COUNT(*)`, `GROUP BY cidade`.
+
+-- COMMAND ----------
+
+CREATE MATERIALIZED VIEW mv_ticket_medio_cidade AS
+SELECT
+  cidade,
+  ROUND(AVG(___), 2) AS ticket_medio,
+  COUNT(*)           AS qtd_vendas
+FROM externo.public.vendas_lojas
+GROUP BY ___;
+
+SELECT * FROM mv_ticket_medio_cidade ORDER BY ticket_medio DESC;
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ## Sua vez 4 — crédito por produto (MV com JOIN no catálogo)
+-- MAGIC Junte `contratos_credito` com `produtos_credito` pelo `tipo_produto` e traga o
+-- MAGIC **nome do produto**, a **taxa de juros** e o total contratado.
+-- MAGIC Dica: a ponte entre as tabelas é a coluna `tipo_produto`.
+
+-- COMMAND ----------
+
+CREATE MATERIALIZED VIEW mv_credito_por_produto AS
+SELECT
+  p.nome_produto,
+  p.taxa_juros_mensal,
+  SUM(c.valor_contratado) AS total_contratado,
+  COUNT(*)                AS qtd_contratos
+FROM externo.public.contratos_credito c
+JOIN externo.public.produtos_credito p ON c.___ = p.___
+GROUP BY p.nome_produto, p.taxa_juros_mensal;
+
+SELECT * FROM mv_credito_por_produto ORDER BY total_contratado DESC;
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ## Sua vez 5 — nome do cliente na venda (MV com JOIN clientes)
+-- MAGIC Junte `vendas_lojas` com `clientes` pelo `cliente_id` para mostrar **quem**
+-- MAGIC comprou. Traga `nome`, `cidade` e `valor_venda`.
+
+-- COMMAND ----------
+
+CREATE MATERIALIZED VIEW mv_cliente_venda AS
+SELECT
+  cl.nome,
+  v.cidade,
+  v.valor_venda
+FROM externo.public.vendas_lojas v
+JOIN externo.public.clientes cl ON v.___ = cl.___;
+
+SELECT * FROM mv_cliente_venda ORDER BY valor_venda DESC;
+
+-- COMMAND ----------
+
+-- MAGIC %md
+-- MAGIC ## Sua vez 6 — receita vs meta (VIEW sobre VIEW)
+-- MAGIC Crie a VIEW `vw_receita_vs_meta` reaproveitando a `vw_resumo_cidade` e juntando
+-- MAGIC com `metas_cidade` (pela `cidade`). Calcule o **% da meta atingido**.
+-- MAGIC Dica: `receita_total / meta_receita * 100`. Como é VIEW, fica sempre ao vivo.
+
+-- COMMAND ----------
+
+CREATE OR REPLACE VIEW vw_receita_vs_meta AS
+SELECT
+  meta.cidade,
+  meta.meta_receita,
+  vw.receita_total,
+  ROUND(vw.receita_total / meta.meta_receita * 100, 1) AS pct_meta
+FROM vw_resumo_cidade vw
+JOIN externo.public.metas_cidade meta ON vw.cidade = meta.___;
+
+SELECT * FROM vw_receita_vs_meta ORDER BY pct_meta DESC;
+
+-- COMMAND ----------
+
+-- MAGIC %md
 -- MAGIC ## Como saber se acertou
 -- MAGIC - [ ] `mv_resumo_cidade` retorna as mesmas linhas/valores da `vw_resumo_cidade`
 -- MAGIC - [ ] `mv_credito_por_status` tem uma linha por status com `qtd_contratos` e `credito_total`
+-- MAGIC - [ ] `mv_ticket_medio_cidade`: Araxá tem ticket médio 1950 (2 vendas); Goiânia 9999
+-- MAGIC - [ ] `mv_credito_por_produto`: Crédito Consignado lidera com 17000 em 2 contratos
+-- MAGIC - [ ] `mv_cliente_venda`: 7 linhas com o nome do cliente em cada venda
+-- MAGIC - [ ] `vw_receita_vs_meta`: Goiânia com 200% da meta; Uberlândia com 75%
 -- MAGIC - [ ] Depois de mudar a fonte: a VIEW muda na hora; a MV só muda após `REFRESH`
 -- MAGIC
 -- MAGIC A resposta de referência fica com o instrutor.
