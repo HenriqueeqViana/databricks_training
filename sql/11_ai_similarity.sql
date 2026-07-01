@@ -23,26 +23,32 @@ USE SCHEMA treino_match;
 -- COMMAND ----------
 
 -- MAGIC %md
--- MAGIC ## Fontes (pronto)
--- MAGIC Bronze do Postgres + o JSON novo. O JSON está semeado inline aqui para o
--- MAGIC exercício rodar sozinho; em produção você leria o arquivo, ex.:
--- MAGIC `SELECT * FROM read_files('/Volumes/.../clientes_novos.json', format => 'json')`.
+-- MAGIC ## Fontes
+-- MAGIC Fonte 1 = bronze do Postgres. Fonte 2 = o arquivo `clientes_novos.json`, que
+-- MAGIC você sobe num **Volume** do Unity Catalog e lê com `read_files`.
+-- MAGIC
+-- MAGIC **Setup do Volume (uma vez):**
+-- MAGIC ```sql
+-- MAGIC CREATE VOLUME IF NOT EXISTS workspace.treino_match.dados;
+-- MAGIC ```
+-- MAGIC Depois faça upload de `clientes_novos.json` para
+-- MAGIC `/Volumes/workspace/treino_match/dados/` (Catalog Explorer → Volume → Upload,
+-- MAGIC ou `databricks fs cp`). Ajuste o widget `json_path` se usar outro caminho.
+
+-- COMMAND ----------
+
+CREATE WIDGET TEXT json_path DEFAULT '/Volumes/workspace/treino_match/dados/clientes_novos.json';
 
 -- COMMAND ----------
 
 CREATE OR REPLACE TABLE bronze_customers AS SELECT * FROM externo.public.customers;
 
+-- lê o JSON do Volume (o arquivo é um array de objetos -> multiLine => true)
 CREATE OR REPLACE TEMPORARY VIEW raw_novos AS
-SELECT * FROM VALUES
-  ('Ana Souza',      'ana.souza@gmail.com',    '34999112233',    'Rua das Flores, 100, Araxá - MG'),
-  ('Bruno L.',       'bruno.lima@hotmail.com', '(34) 98822-3344','Avenida Brasil 200 - Uberlândia'),
-  ('Karla Mendes',   'carla.mendes@yahoo.com', '62997771122',    'Rua 5, 33, Goiânia'),
-  ('Ana Souza',      'ana.souza2@gmail.com',   '34988880000',    'Rua Nova, 5 - Belo Horizonte'),
-  ('Diego Ferreira', 'diego@empresa.com',      '3499999-6655',   'Praça Central, 12 - Patos de Minas'),
-  ('Fabio Rocha',    'fabio.rocha@gmail.com',  '34988887777',    'Rua B, 45, Uberaba - MG'),
-  ('Helena Dias',    'helena.dias@outlook.com','11955554444',    'Rua Y, 9 - Campinas'),
-  ('Gabriela N.',    'gabi.nunes@gmail.com',   '32995554433',    'Av. Goiás, 500 - Cataguases')
-  AS t(nome, email, phone, address);
+SELECT nome, email, phone, address
+FROM read_files('${json_path}', format => 'json', multiLine => true);
+
+SELECT * FROM raw_novos;
 
 -- COMMAND ----------
 
