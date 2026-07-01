@@ -1,0 +1,10 @@
+[
+  {"nome": "Ana Souza",      "email": "ana.souza@gmail.com",    "phone": "34999112233",       "address": "Rua das Flores, 100, Araxá - MG"},
+  {"nome": "Bruno L.",       "email": "bruno.lima@hotmail.com", "phone": "(34) 98822-3344",    "address": "Avenida Brasil 200 - Uberlândia"},
+  {"nome": "Karla Mendes",   "email": "carla.mendes@yahoo.com", "phone": "62997771122",        "address": "Rua 5, 33, Goiânia"},
+  {"nome": "Ana Souza",      "email": "ana.souza2@gmail.com",   "phone": "34988880000",        "address": "Rua Nova, 5 - Belo Horizonte"},
+  {"nome": "Diego Ferreira", "email": "diego@empresa.com",      "phone": "3499999-6655",       "address": "Praça Central, 12 - Patos de Minas"},
+  {"nome": "Fabio Rocha",    "email": "fabio.rocha@gmail.com",  "phone": "34988887777",        "address": "Rua B, 45, Uberaba - MG"},
+  {"nome": "Helena Dias",    "email": "helena.dias@outlook.com","phone": "11955554444",        "address": "Rua Y, 9 - Campinas"},
+  {"nome": "Gabriela N.",    "email": "gabi.nunes@gmail.com",   "phone": "32995554433",        "address": "Av. Goiás, 500 - Cataguases"}
+]
