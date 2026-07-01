@@ -8,3 +8,9 @@ __pycache__/
 desktop.ini
 .idea/
 .vscode/
+
+# Gabaritos/soluções — ficam com o instrutor, fora do repo
+*_solution.sql
+*_solution.py
+*GABARITO*
+databricks.yml
