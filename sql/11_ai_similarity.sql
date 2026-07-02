@@ -48,7 +48,8 @@ FROM read_files('${json_path}', format => 'json', multiLine => true);
 
 -- MAGIC %md
 -- MAGIC ## Desafio 1 — `silver_customer_xref` (tratar colunas + unir as bases)
--- MAGIC Padronize as colunas nas DUAS fontes e junte com `UNION ALL`, marcando a `origem`.
+-- MAGIC Padronize as colunas nas DUAS fontes e junte com `UNION ALL`, marcando a
+-- MAGIC coluna `source_name` (de onde o registro veio).
 -- MAGIC - `full_name` = nome completo, Iniciais Maiúsculas, sem espaços sobrando
 -- MAGIC - `email` = minúsculo e **sem espaços** (o Postgres tem `gmail. com`)
 -- MAGIC - `phone` = **só dígitos**
