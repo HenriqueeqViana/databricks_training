@@ -61,7 +61,7 @@ FROM read_files('${json_path}', format => 'json', multiLine => true);
 
 CREATE OR REPLACE TABLE silver_customer_xref AS
 SELECT
-  'postgresql'                                     AS origem,
+  'bronze_customer_postgresql'                     AS source_name,
   concat('PG-', customer_id)                       AS registro_id,
   initcap(trim(first_name))||' '||initcap(trim(last_name)) AS full_name,
   lower(replace(trim(email),' ',''))               AS email,
@@ -72,7 +72,7 @@ FROM bronze_customer_postgresql
 UNION ALL
 
 SELECT
-  'json'                                           AS origem,
+  'bronze_customer_json'                           AS source_name,
   concat('JS-', row_number() OVER (ORDER BY nome, email)) AS registro_id,
   initcap(trim(nome))                              AS full_name,
   ___                                              AS email,
@@ -80,7 +80,7 @@ SELECT
   ___                                              AS endereco
 FROM bronze_customer_json;
 
-SELECT origem, count(*) FROM silver_customer_xref GROUP BY origem;
+SELECT source_name, count(*) FROM silver_customer_xref GROUP BY source_name;
 
 -- COMMAND ----------
 
@@ -94,6 +94,7 @@ SELECT origem, count(*) FROM silver_customer_xref GROUP BY origem;
 
 CREATE OR REPLACE TEMPORARY VIEW pares_clientes AS
 SELECT
+  pg.source_name AS source_pg, js.source_name AS source_js,
   pg.registro_id AS id_pg,  js.registro_id AS id_js,
   pg.full_name   AS nome_pg, js.full_name  AS nome_js,
   pg.email       AS email_pg, js.email     AS email_js,
@@ -103,7 +104,7 @@ SELECT
   (pg.phone = js.phone)            AS telefone_igual
 FROM silver_customer_xref pg
 JOIN silver_customer_xref js
-  ON pg.origem = 'postgresql' AND js.origem = 'json';
+  ON pg.source_name = 'bronze_customer_postgresql' AND js.source_name = 'bronze_customer_json';
 
 -- COMMAND ----------
 
@@ -125,7 +126,7 @@ WITH sinais AS (
   FROM pares_clientes
 )
 SELECT
-  id_pg, nome_pg, id_js, nome_js, email_pg, email_js,
+  source_pg, id_pg, nome_pg, source_js, id_js, nome_js, email_pg, email_js,
   ROUND(sim_nome,3) AS sim_nome, ROUND(sim_email,3) AS sim_email, ROUND(sim_endereco,3) AS sim_endereco,
   telefone_igual,
   CASE
