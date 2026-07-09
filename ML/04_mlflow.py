@@ -1,10 +1,13 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 04 · MLflow 3 — rastreando o primeiro modelo
+# MAGIC # 04 · MLflow 3 — rastreando o primeiro modelo (Spark ML)
 # MAGIC
 # MAGIC **Aqui entra o Python** — na medida certa. O SQL preparou tudo
 # MAGIC (`features_treino` / `features_teste`); o Python só treina e o MLflow
 # MAGIC anota tudo sozinho.
+# MAGIC
+# MAGIC Usamos o **Spark ML**: o dado nunca sai do Spark — o mesmo código que
+# MAGIC treina com 726 linhas treinaria com 726 milhões.
 # MAGIC
 # MAGIC ## Como este notebook funciona
 # MAGIC O código vem quase pronto — os `TODO`s são pequenos e cirúrgicos.
@@ -15,16 +18,20 @@
 # COMMAND ----------
 
 import mlflow
-import pandas as pd
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_auc_score
+from pyspark.ml.feature import VectorAssembler
+from pyspark.ml.classification import LogisticRegression
+from pyspark.ml.evaluation import BinaryClassificationEvaluator
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Exemplo resolvido — do SQL para o Python
-# MAGIC `spark.table()` lê a tabela do Unity Catalog; `.toPandas()` traz para a
-# MAGIC memória. As features viram `X`; o alvo vira `y`.
+# MAGIC ## Exemplo resolvido — do SQL para o Spark ML
+# MAGIC `spark.table()` lê a tabela do Unity Catalog — e ela **continua sendo um
+# MAGIC DataFrame Spark** (nada de trazer para a memória).
+# MAGIC
+# MAGIC A única exigência do Spark ML: as features precisam estar **empacotadas
+# MAGIC numa coluna única** do tipo vetor. Quem faz isso é o `VectorAssembler` —
+# MAGIC pense nele como um `SELECT` que junta 8 colunas em 1.
 
 # COMMAND ----------
 
@@ -32,41 +39,52 @@ FEATURES = ['score_bureau', 'atrasos_previos', 'comprometimento',
             'renda_log', 'relacionamento_anos', 'canal_app',
             'canal_web', 'tem_atraso']
 
-treino = spark.table('workspace.treino_ml.features_treino').toPandas()
-teste  = spark.table('workspace.treino_ml.features_teste').toPandas()
+treino = spark.table('workspace.treino_ml.features_treino')
+teste  = spark.table('workspace.treino_ml.features_teste')
 
-X_treino, y_treino = treino[FEATURES], treino['inadimplente']
-X_teste,  y_teste  = teste[FEATURES],  teste['inadimplente']
+montador = VectorAssembler(inputCols=FEATURES, outputCol='features')
+treino_ml = montador.transform(treino)
+teste_ml  = montador.transform(teste)
 
-print(X_treino.shape, X_teste.shape)   # (726, 8) (185, 8)
+print(treino_ml.count(), teste_ml.count())   # 726 185
+display(treino_ml.select('cliente_id', 'features', 'inadimplente').limit(5))
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC ## DESAFIO 1 — ligue o autolog e treine
-# MAGIC Duas lacunas: ativar o `mlflow.autolog()` e treinar com `.fit()`.
-# MAGIC O autolog registra parâmetros, ambiente e o modelo — sem você pedir.
+# MAGIC Duas lacunas: ativar o `mlflow.pyspark.ml.autolog()` e treinar com
+# MAGIC `.fit()`. O autolog registra parâmetros, ambiente e o modelo — sem pedir.
 
 # COMMAND ----------
 
-mlflow.___()          # TODO: autolog
+mlflow.pyspark.ml.___()          # TODO: autolog
 
 with mlflow.start_run(run_name='logistica_baseline') as run:
-    modelo = LogisticRegression(max_iter=1000)
-    modelo.___(X_treino, y_treino)          # TODO: fit
+    lr = LogisticRegression(featuresCol='features',
+                            labelCol='inadimplente',
+                            maxIter=100)
+    modelo = lr.___(treino_ml)               # TODO: fit
     print('run_id:', run.info.run_id)
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC ## DESAFIO 2 — meça no teste e logue a métrica
-# MAGIC `predict_proba(...)[:, 1]` devolve a probabilidade de inadimplência.
-# MAGIC O AUC compara essa ordenação com a realidade. Logue como `auc_teste`.
+# MAGIC No Spark ML, `modelo.transform(teste_ml)` adiciona as colunas de
+# MAGIC predição (`probability`, `prediction`) ao DataFrame. O
+# MAGIC `BinaryClassificationEvaluator` calcula o AUC comparando a
+# MAGIC probabilidade com a realidade. Logue como `auc_teste`.
 
 # COMMAND ----------
 
-proba_teste = modelo.predict_proba(___)[:, 1]        # TODO: X_teste
-auc = roc_auc_score(___, proba_teste)                # TODO: y_teste
+predicoes = modelo.transform(___)                    # TODO: teste_ml
+
+avaliador = BinaryClassificationEvaluator(
+    labelCol='inadimplente',
+    metricName='areaUnderROC')
+
+auc = avaliador.evaluate(___)                        # TODO: predicoes
 print(f'AUC no teste: {auc:.3f}')
 
 with mlflow.start_run(run_id=run.info.run_id):
@@ -81,14 +99,17 @@ with mlflow.start_run(run_id=run.info.run_id):
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## DESAFIO 3 — acurácia engana (prove em uma linha)
+# MAGIC ## DESAFIO 3 — acurácia engana (prove em uma query)
 # MAGIC Calcule a acurácia do "modelo" que chuta 0 para todo mundo.
-# MAGIC Dica: é simplesmente a proporção de bons pagadores no teste.
+# MAGIC Dica: é simplesmente a proporção de bons pagadores no teste — e isso é
+# MAGIC um `avg` que você já sabe fazer desde a Aula 1.
 
 # COMMAND ----------
 
-acuracia_chute = (y_teste == 0).___()    # TODO: mean
-print(f'Chutar "ninguém dá calote" acerta {acuracia_chute:.1%}')
+# MAGIC %sql
+# MAGIC SELECT round(avg(CASE WHEN inadimplente = ___ THEN 1 ELSE 0 END), 3)
+# MAGIC          AS acuracia_do_chute
+# MAGIC FROM workspace.treino_ml.features_teste;
 
 # COMMAND ----------
 
@@ -96,13 +117,14 @@ print(f'Chutar "ninguém dá calote" acerta {acuracia_chute:.1%}')
 # MAGIC ## DESAFIO 4 — explore a UI de experimentos
 # MAGIC Sem código: no menu lateral, **Experiments** → abra o experimento deste
 # MAGIC notebook e responda no chat da aula:
-# MAGIC 1. Quais **parâmetros** o autolog registrou no seu run?
-# MAGIC 2. Onde está a **signature** do modelo? (dica: aba *Artifacts* → `model/`)
+# MAGIC 1. Quais **parâmetros** o autolog registrou no seu run? (maxIter,
+# MAGIC    regParam, elasticNetParam...)
+# MAGIC 2. Onde está o **modelo** salvo? (aba *Artifacts* → `model/`)
 # MAGIC 3. O AUC do colega do lado bateu com o seu? Por quê? (semente!)
 # MAGIC
 # MAGIC ## Como saber se acertou
 # MAGIC - [ ] Run `logistica_baseline` visível na UI com parâmetros e modelo
 # MAGIC - [ ] Métrica `auc_teste` ≈ 0.78 registrada no run
-# MAGIC - [ ] Acurácia do chute ≈ **0.78** — quase igual ao AUC do modelo, e é
+# MAGIC - [ ] Acurácia do chute = **0.778** — quase igual ao AUC do modelo, e é
 # MAGIC       exatamente por isso que acurácia NÃO é a métrica deste problema
 # MAGIC - [ ] A turma inteira com o mesmo AUC (dado e seed idênticos)
