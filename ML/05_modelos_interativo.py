@@ -50,11 +50,11 @@ modelos = {
 
 resultados = {}
 for nome, m in modelos.items():
-    with mlflow.start_run(run_name=___):                 # TODO: nome
-        m.fit(___, ___)                                  # TODO: X_treino, y_treino
+    with mlflow.start_run(run_name=___):                
+        m.fit(___, ___)                                 
         proba = m.predict_proba(X_teste)[:, 1]
         auc = roc_auc_score(y_teste, proba)
-        mlflow.log_metric('auc_teste', ___)              # TODO: auc
+        mlflow.log_metric('auc_teste', ___)             
         resultados[nome] = auc
         print(f'{nome}: AUC = {auc:.3f}')
 
@@ -68,8 +68,7 @@ print('Acertou!' if MINHA_APOSTA_MODELO == vencedor else 'Errou essa — bora ve
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Checkpoint 1:** logística ≈ **0.78**, floresta ≈ **0.75**. O modelo
-# MAGIC simples vence — acontece mais do que se imagina, e é por isso que
+# MAGIC **Checkpoint 1:** logística ≈ ***, floresta ≈ ****. O modelo
 # MAGIC baseline simples é obrigatório.
 
 # COMMAND ----------
