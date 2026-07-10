@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # 05 · Modelos — logística vs floresta
+# MAGIC # 05 · Modelos — logística vs random forest
 # MAGIC
 # MAGIC **Cenário:** treinar dois modelos com a MESMA régua (mesmas features,
 # MAGIC mesmo teste, mesma métrica), comparar na UI do MLflow, interpretar o que
@@ -37,15 +37,15 @@ X_teste,  y_teste  = teste[FEATURES],  teste['inadimplente']
 
 # COMMAND ----------
 
-MINHA_APOSTA_MODELO = "___"  # escreva 'logistica' ou 'floresta'
+MINHA_APOSTA_MODELO = "___"  # escreva 'logistica' ou 'random forest'
 
 # COMMAND ----------
 
 mlflow.autolog()
 
 modelos = {
-    'logistica': LogisticRegression(max_iter=1000),
-    'floresta':  RandomForestClassifier(n_estimators=200, random_state=42),
+    'logistica':     LogisticRegression(max_iter=1000),
+    'random forest': RandomForestClassifier(n_estimators=200, random_state=42),
 }
 
 resultados = {}
@@ -68,13 +68,13 @@ print('Acertou!' if MINHA_APOSTA_MODELO == vencedor else 'Errou essa — bora ve
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC **Checkpoint 1:** logística ≈ ***, floresta ≈ ****. O modelo
+# MAGIC **Checkpoint 1:** logística ≈ ***, random forest ≈ ****. O modelo
 # MAGIC baseline simples é obrigatório.
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## DESAFIO 2 — o que a floresta acha importante
+# MAGIC ## DESAFIO 2 — o que a random forest acha importante
 # MAGIC `feature_importances_` diz quanto cada feature pesou. Monte o DataFrame,
 # MAGIC ordene do maior para o menor e grave como tabela para consultar em SQL.
 # MAGIC
@@ -88,11 +88,11 @@ MINHA_APOSTA_FEATURE = "___"  # escreva o nome exato de uma das 8 features
 
 # COMMAND ----------
 
-floresta = modelos['floresta']
+random_forest = modelos['random forest']
 importancias = pd.DataFrame({
     'feature': FEATURES,
-    'importancia': floresta.___,                          # TODO: feature_importances_
-}).sort_values('importancia', ascending=___)              # TODO: False
+    'importancia': random_forest.___,
+}).sort_values('importancia', ascending=___)             
 
 (spark.createDataFrame(importancias)
     .write.mode('overwrite')
@@ -131,7 +131,7 @@ MINHA_APOSTA_SINAL = "___"  # escreva 'positivo' ou 'negativo'
 
 coefs = pd.DataFrame({
     'feature': FEATURES,
-    'coeficiente': modelos['logistica'].___[0],           # TODO: coef_
+    'coeficiente': modelos['logistica'].___[0],
 }).sort_values('coeficiente')
 coefs
 
@@ -164,7 +164,7 @@ MINHA_APOSTA_LINHAS = "___"  # escreva um número inteiro
 
 # COMMAND ----------
 
-campeao = modelos['___']                                  # TODO: 'logistica'
+campeao = modelos['___']
 proba_campeao = campeao.predict_proba(X_teste)[:, 1]
 
 predicoes = pd.DataFrame({
@@ -175,7 +175,7 @@ predicoes = pd.DataFrame({
 
 (spark.createDataFrame(predicoes)
     .write.mode('overwrite')
-    .saveAsTable('workspace.treino_ml.___'))              # TODO: 'predicoes_teste'
+    .saveAsTable('workspace.treino_ml.___'))
 
 # COMMAND ----------
 
@@ -195,7 +195,7 @@ print('Acertou!' if MINHA_APOSTA_LINHAS == len(predicoes) else 'Errou essa — b
 
 # MAGIC %md
 # MAGIC ## Como saber se acertou
-# MAGIC - [ ] Dois runs na UI: `logistica` e `floresta`, com `auc_teste` em cada
+# MAGIC - [ ] Dois runs na UI: `logistica` e `random forest`, com `auc_teste` em cada
 # MAGIC - [ ] AUC ≈ 0.78 vs ≈ 0.75 — logística campeã
 # MAGIC - [ ] `importancias_features`: score_bureau no topo (~0.32)
 # MAGIC - [ ] Coeficiente do score negativo; o de atrasos positivo
